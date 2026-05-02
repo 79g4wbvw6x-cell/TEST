@@ -1,10 +1,11 @@
 import React from 'react';
+import { BEBAS, loadLocalFonts } from './fonts';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
 import { BLACK, ORANGE, WHITE } from './constants';
 import { GlowOrb, ParticleField, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
+
+loadLocalFonts();
 
 export const Opening: React.FC = () => {
   const frame = useCurrentFrame();
@@ -70,7 +71,7 @@ export const Opening: React.FC = () => {
         {/* MANDAT */}
         <div
           style={{
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 148,
             color: WHITE,
             letterSpacing: '8px',
@@ -85,7 +86,7 @@ export const Opening: React.FC = () => {
         {/* ZÉRO — larger, orange */}
         <div
           style={{
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 210,
             color: ORANGE,
             letterSpacing: '-4px',
@@ -114,7 +115,7 @@ export const Opening: React.FC = () => {
         <div
           style={{
             marginTop: 24,
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 28,
             color: 'rgba(255,255,255,0.55)',
             letterSpacing: '10px',

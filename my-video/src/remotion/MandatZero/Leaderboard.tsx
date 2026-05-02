@@ -1,12 +1,9 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { BLACK, ORANGE, WHITE } from './constants';
 import { Scanlines, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
 
 const LEADERS = [
   { rank: 1, name: 'Amara K.', city: 'Lyon', pts: 2840, color: '#FFD700' },
@@ -51,7 +48,7 @@ const Row: React.FC<{ leader: (typeof LEADERS)[0]; index: number; isLast50: bool
       {/* Rank */}
       <div
         style={{
-          fontFamily: bebas,
+          fontFamily: BEBAS,
           fontSize: 28,
           color: leader.color,
           minWidth: 44,
@@ -72,7 +69,7 @@ const Row: React.FC<{ leader: (typeof LEADERS)[0]; index: number; isLast50: bool
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: bebas,
+          fontFamily: BEBAS,
           fontSize: 18,
           color: BLACK,
           fontWeight: 900,
@@ -84,17 +81,19 @@ const Row: React.FC<{ leader: (typeof LEADERS)[0]; index: number; isLast50: bool
 
       {/* Info */}
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: bebas, fontSize: 22, color: WHITE, lineHeight: 1 }}>{leader.name}</div>
-        <div style={{ fontFamily: inter, fontSize: 12, color: '#555', marginTop: 1 }}>{leader.city}</div>
+        <div style={{ fontFamily: BEBAS, fontSize: 22, color: WHITE, lineHeight: 1 }}>{leader.name}</div>
+        <div style={{ fontFamily: INTER, fontSize: 12, color: '#555', marginTop: 1 }}>{leader.city}</div>
       </div>
 
       {/* Points */}
-      <div style={{ fontFamily: bebas, fontSize: 26, color: ORANGE, lineHeight: 1 }}>
+      <div style={{ fontFamily: BEBAS, fontSize: 26, color: ORANGE, lineHeight: 1 }}>
         {leader.pts.toLocaleString('fr-FR')}
       </div>
     </div>
   );
 };
+
+loadLocalFonts();
 
 export const Leaderboard: React.FC = () => {
   const frame = useCurrentFrame();
@@ -146,12 +145,12 @@ export const Leaderboard: React.FC = () => {
             textAlign: 'center',
           }}
         >
-          <div style={{ fontFamily: bebas, fontSize: 30, color: ORANGE, letterSpacing: '10px' }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 30, color: ORANGE, letterSpacing: '10px' }}>
             CLASSEMENT NATIONAL
           </div>
           <div
             style={{
-              fontFamily: bebas,
+              fontFamily: BEBAS,
               fontSize: 100,
               color: WHITE,
               lineHeight: 0.9,
@@ -189,7 +188,7 @@ export const Leaderboard: React.FC = () => {
                   <div style={{ flex: 1, height: 1, backgroundColor: ORANGE }} />
                   <div
                     style={{
-                      fontFamily: bebas,
+                      fontFamily: BEBAS,
                       fontSize: 15,
                       color: ORANGE,
                       letterSpacing: '4px',

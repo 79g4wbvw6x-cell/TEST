@@ -1,12 +1,9 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { NAVY, ORANGE, WHITE } from './constants';
 import { ParticleField, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
 
 const SenateSilhouette: React.FC<{ opacity: number }> = ({ opacity }) => (
   <svg
@@ -64,6 +61,8 @@ const SenateSilhouette: React.FC<{ opacity: number }> = ({ opacity }) => (
     ))}
   </svg>
 );
+
+loadLocalFonts();
 
 export const Summit: React.FC = () => {
   const frame = useCurrentFrame();
@@ -136,7 +135,7 @@ export const Summit: React.FC = () => {
         <div
           style={{
             opacity: sommetOpacity,
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 32,
             color: ORANGE,
             letterSpacing: '16px',
@@ -151,7 +150,7 @@ export const Summit: React.FC = () => {
           style={{
             opacity: g50Spring,
             transform: `scale(${interpolate(g50Spring, [0, 1], [0.6, 1])})`,
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 186,
             color: WHITE,
             letterSpacing: '-6px',
@@ -176,7 +175,7 @@ export const Summit: React.FC = () => {
 
         {/* Subtitle */}
         <div style={{ opacity: subtitleOpacity, textAlign: 'center', padding: '24px 80px 0', lineHeight: 1.65 }}>
-          <div style={{ fontFamily: inter, fontSize: 26, color: 'rgba(255,255,255,0.65)', fontWeight: 300 }}>
+          <div style={{ fontFamily: INTER, fontSize: 26, color: 'rgba(255,255,255,0.65)', fontWeight: 300 }}>
             Une vraie session parlementaire
             <br />
             <span style={{ color: WHITE, fontWeight: 700 }}>au Sénat Français</span>
@@ -202,7 +201,7 @@ export const Summit: React.FC = () => {
             <div key={i} style={{ textAlign: 'center' }}>
               <div
                 style={{
-                  fontFamily: bebas,
+                  fontFamily: BEBAS,
                   fontSize: 48,
                   color: s.dim ? '#3A3A4A' : ORANGE,
                   lineHeight: 1,
@@ -213,7 +212,7 @@ export const Summit: React.FC = () => {
               </div>
               <div
                 style={{
-                  fontFamily: inter,
+                  fontFamily: INTER,
                   fontSize: 13,
                   color: 'rgba(255,255,255,0.4)',
                   letterSpacing: '3px',

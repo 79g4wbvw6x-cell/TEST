@@ -1,12 +1,11 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { CHARCOAL, NAVY, ORANGE, WHITE } from './constants';
 import { AnimatedCount, GlitchText } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
+
+loadLocalFonts();
 
 export const Problem: React.FC = () => {
   const frame = useCurrentFrame();
@@ -58,7 +57,7 @@ export const Problem: React.FC = () => {
           style={{
             opacity: titleSpring,
             transform: `translateY(${titleY}px)`,
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 52,
             color: NAVY,
             letterSpacing: '10px',
@@ -91,7 +90,7 @@ export const Problem: React.FC = () => {
         >
           <div
             style={{
-              fontFamily: bebas,
+              fontFamily: BEBAS,
               fontSize: 116,
               color: ORANGE,
               lineHeight: 1,
@@ -102,7 +101,7 @@ export const Problem: React.FC = () => {
           </div>
           <div
             style={{
-              fontFamily: inter,
+              fontFamily: INTER,
               fontSize: 26,
               fontWeight: 600,
               color: NAVY,
@@ -125,7 +124,7 @@ export const Problem: React.FC = () => {
               display: 'flex',
               justifyContent: 'space-between',
               marginBottom: 10,
-              fontFamily: inter,
+              fontFamily: INTER,
               fontSize: 20,
               color: CHARCOAL,
             }}
@@ -147,7 +146,7 @@ export const Problem: React.FC = () => {
           <div
             style={{
               marginTop: 10,
-              fontFamily: inter,
+              fontFamily: INTER,
               fontSize: 14,
               color: '#999',
               letterSpacing: '1px',
@@ -170,7 +169,7 @@ export const Problem: React.FC = () => {
         >
           <div
             style={{
-              fontFamily: bebas,
+              fontFamily: BEBAS,
               fontSize: 104,
               color: NAVY,
               letterSpacing: '-1px',
@@ -181,7 +180,7 @@ export const Problem: React.FC = () => {
           </div>
           <div
             style={{
-              fontFamily: bebas,
+              fontFamily: BEBAS,
               fontSize: 42,
               color: CHARCOAL,
               letterSpacing: '8px',

@@ -1,10 +1,9 @@
 import React from 'react';
+import { BEBAS, loadLocalFonts } from './fonts';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
 import { CHARCOAL, ORANGE, WHITE } from './constants';
 import { FilmGrain, ParticleField, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
 
 const WORDS = [
   { text: 'FINI', delay: 4, color: WHITE, size: 182, shake: true },
@@ -35,7 +34,7 @@ const WordImpact: React.FC<{ word: (typeof WORDS)[0] }> = ({ word }) => {
   return (
     <div
       style={{
-        fontFamily: bebas,
+        fontFamily: BEBAS,
         fontSize: word.size,
         color: word.color,
         lineHeight: 0.95,
@@ -49,6 +48,8 @@ const WordImpact: React.FC<{ word: (typeof WORDS)[0] }> = ({ word }) => {
     </div>
   );
 };
+
+loadLocalFonts();
 
 export const Manifesto: React.FC = () => {
   const frame = useCurrentFrame();

@@ -1,12 +1,9 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { NAVY, ORANGE, WHITE } from './constants';
 import { ParticleField, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
 
 const STEPS = [
   {
@@ -60,13 +57,13 @@ const Step: React.FC<{ step: (typeof STEPS)[0]; index: number }> = ({ step, inde
         boxSizing: 'border-box',
       }}
     >
-      <div style={{ fontFamily: bebas, fontSize: 52, color: ORANGE, opacity: 0.5, lineHeight: 1, minWidth: 56 }}>
+      <div style={{ fontFamily: BEBAS, fontSize: 52, color: ORANGE, opacity: 0.5, lineHeight: 1, minWidth: 56 }}>
         {step.n}
       </div>
       <div style={{ flex: 1 }}>
         <div
           style={{
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 26,
             color: WHITE,
             letterSpacing: '3px',
@@ -77,7 +74,7 @@ const Step: React.FC<{ step: (typeof STEPS)[0]; index: number }> = ({ step, inde
         </div>
         <div
           style={{
-            fontFamily: inter,
+            fontFamily: INTER,
             fontSize: 15,
             color: 'rgba(255,255,255,0.55)',
             lineHeight: 1.55,
@@ -91,6 +88,8 @@ const Step: React.FC<{ step: (typeof STEPS)[0]; index: number }> = ({ step, inde
     </div>
   );
 };
+
+loadLocalFonts();
 
 export const HowItWorks: React.FC = () => {
   const frame = useCurrentFrame();
@@ -133,10 +132,10 @@ export const HowItWorks: React.FC = () => {
             marginBottom: 12,
           }}
         >
-          <div style={{ fontFamily: bebas, fontSize: 26, color: ORANGE, letterSpacing: '10px' }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 26, color: ORANGE, letterSpacing: '10px' }}>
             MÉCANISME
           </div>
-          <div style={{ fontFamily: bebas, fontSize: 68, color: WHITE, letterSpacing: '-1px', lineHeight: 1 }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 68, color: WHITE, letterSpacing: '-1px', lineHeight: 1 }}>
             COMMENT ÇA MARCHE
           </div>
           <div

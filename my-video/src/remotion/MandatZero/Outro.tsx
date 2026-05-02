@@ -1,14 +1,13 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { BLACK, ORANGE, WHITE } from './constants';
 import { GlowOrb, ParticleField } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
 
 const BADGES = ['16–25 ANS', 'GRATUIT', 'MÉRITOCRATIQUE'];
+
+loadLocalFonts();
 
 export const Outro: React.FC = () => {
   const frame = useCurrentFrame();
@@ -52,12 +51,12 @@ export const Outro: React.FC = () => {
             textAlign: 'center',
           }}
         >
-          <div style={{ fontFamily: bebas, fontSize: 72, color: WHITE, letterSpacing: '4px', lineHeight: 1 }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 72, color: WHITE, letterSpacing: '4px', lineHeight: 1 }}>
             MANDAT
           </div>
           <div
             style={{
-              fontFamily: bebas,
+              fontFamily: BEBAS,
               fontSize: 112,
               color: ORANGE,
               letterSpacing: '-3px',
@@ -84,7 +83,7 @@ export const Outro: React.FC = () => {
         <div
           style={{
             opacity: taglineOpacity,
-            fontFamily: inter,
+            fontFamily: INTER,
             fontSize: 24,
             color: 'rgba(255,255,255,0.6)',
             fontStyle: 'italic',
@@ -100,7 +99,7 @@ export const Outro: React.FC = () => {
         <div
           style={{
             opacity: urlOpacity,
-            fontFamily: bebas,
+            fontFamily: BEBAS,
             fontSize: 38,
             color: ORANGE,
             letterSpacing: '4px',
@@ -120,7 +119,7 @@ export const Outro: React.FC = () => {
                 border: `1px solid ${ORANGE}44`,
                 borderRadius: 100,
                 padding: '9px 22px',
-                fontFamily: bebas,
+                fontFamily: BEBAS,
                 fontSize: 17,
                 color: ORANGE,
                 letterSpacing: '3px',

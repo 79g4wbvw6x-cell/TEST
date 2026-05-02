@@ -1,18 +1,17 @@
 import React from 'react';
+import { BEBAS, INTER, loadLocalFonts } from './fonts';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { loadFont as loadBebas } from '@remotion/google-fonts/BebasNeue';
-import { loadFont as loadInter } from '@remotion/google-fonts/Inter';
 import { CHARCOAL, NAVY, ORANGE, WHITE } from './constants';
 import { Scanlines, Vignette } from './atoms';
 
-const { fontFamily: bebas } = loadBebas();
-const { fontFamily: inter } = loadInter();
 
 const MISSIONS = [
   { icon: '🏛', title: 'Conseil municipal de Lyon', role: 'Marie Dupont · Maire', pts: 150 },
   { icon: '📋', title: 'Commission nationale Jeunesse', role: 'Jean Martin · Député 75', pts: 200 },
   { icon: '🗳', title: 'Forum citoyen Bordeaux', role: 'Claire Blanc · Sénatrice', pts: 120 },
 ];
+
+loadLocalFonts();
 
 export const AppReveal: React.FC = () => {
   const frame = useCurrentFrame();
@@ -62,10 +61,10 @@ export const AppReveal: React.FC = () => {
       >
         {/* Title */}
         <div style={{ opacity: titleSpring, transform: `translateY(${titleY}px)`, textAlign: 'center' }}>
-          <div style={{ fontFamily: bebas, fontSize: 34, color: ORANGE, letterSpacing: '12px' }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 34, color: ORANGE, letterSpacing: '12px' }}>
             LA SOLUTION
           </div>
-          <div style={{ fontFamily: bebas, fontSize: 84, color: WHITE, letterSpacing: '-1px', lineHeight: 0.95 }}>
+          <div style={{ fontFamily: BEBAS, fontSize: 84, color: WHITE, letterSpacing: '-1px', lineHeight: 0.95 }}>
             MANDAT ZÉRO
           </div>
           <div
@@ -119,7 +118,7 @@ export const AppReveal: React.FC = () => {
                 marginBottom: 14,
               }}
             >
-              <div style={{ fontFamily: bebas, fontSize: 18, color: ORANGE, letterSpacing: '2px' }}>
+              <div style={{ fontFamily: BEBAS, fontSize: 18, color: ORANGE, letterSpacing: '2px' }}>
                 MANDAT ZÉRO
               </div>
               <div
@@ -133,7 +132,7 @@ export const AppReveal: React.FC = () => {
                   justifyContent: 'center',
                   fontSize: 12,
                   color: WHITE,
-                  fontFamily: inter,
+                  fontFamily: INTER,
                   fontWeight: 700,
                 }}
               >
@@ -154,16 +153,16 @@ export const AppReveal: React.FC = () => {
               }}
             >
               <div>
-                <div style={{ fontFamily: inter, fontSize: 9, color: '#666', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                <div style={{ fontFamily: INTER, fontSize: 9, color: '#666', letterSpacing: '2px', textTransform: 'uppercase' }}>
                   MES POINTS
                 </div>
-                <div style={{ fontFamily: bebas, fontSize: 36, color: ORANGE, lineHeight: 1 }}>{pts}</div>
+                <div style={{ fontFamily: BEBAS, fontSize: 36, color: ORANGE, lineHeight: 1 }}>{pts}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: inter, fontSize: 9, color: '#666', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                <div style={{ fontFamily: INTER, fontSize: 9, color: '#666', letterSpacing: '2px', textTransform: 'uppercase' }}>
                   CLASSEMENT
                 </div>
-                <div style={{ fontFamily: bebas, fontSize: 36, color: WHITE, lineHeight: 1 }}>#{rank}</div>
+                <div style={{ fontFamily: BEBAS, fontSize: 36, color: WHITE, lineHeight: 1 }}>#{rank}</div>
               </div>
             </div>
 
@@ -171,7 +170,7 @@ export const AppReveal: React.FC = () => {
             <div style={{ marginBottom: 14 }}>
               <div
                 style={{
-                  fontFamily: inter,
+                  fontFamily: INTER,
                   fontSize: 9,
                   color: '#555',
                   letterSpacing: '2px',
@@ -196,7 +195,7 @@ export const AppReveal: React.FC = () => {
             {/* Missions */}
             <div
               style={{
-                fontFamily: inter,
+                fontFamily: INTER,
                 fontSize: 9,
                 color: '#444',
                 letterSpacing: '2px',
@@ -238,7 +237,7 @@ export const AppReveal: React.FC = () => {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontFamily: inter,
+                        fontFamily: INTER,
                         fontSize: 10,
                         fontWeight: 700,
                         color: WHITE,
@@ -249,14 +248,14 @@ export const AppReveal: React.FC = () => {
                     >
                       {m.title}
                     </div>
-                    <div style={{ fontFamily: inter, fontSize: 8, color: '#555' }}>{m.role}</div>
+                    <div style={{ fontFamily: INTER, fontSize: 8, color: '#555' }}>{m.role}</div>
                   </div>
                   <div
                     style={{
                       backgroundColor: ORANGE,
                       borderRadius: 6,
                       padding: '3px 8px',
-                      fontFamily: bebas,
+                      fontFamily: BEBAS,
                       fontSize: 14,
                       color: WHITE,
                       whiteSpace: 'nowrap',
@@ -272,7 +271,7 @@ export const AppReveal: React.FC = () => {
 
         {/* Subtitle */}
         <div style={{ opacity: subtitleOpacity, textAlign: 'center', padding: '0 70px' }}>
-          <div style={{ fontFamily: inter, fontSize: 28, color: WHITE, lineHeight: 1.5, fontWeight: 300 }}>
+          <div style={{ fontFamily: INTER, fontSize: 28, color: WHITE, lineHeight: 1.5, fontWeight: 300 }}>
             Des{' '}
             <span style={{ color: ORANGE, fontWeight: 700 }}>missions civiques</span> réelles,
             <br />
