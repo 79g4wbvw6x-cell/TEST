@@ -1,57 +1,91 @@
 import React from 'react';
-import { AbsoluteFill, Sequence } from 'remotion';
-import { BLACK } from './constants';
+import { AbsoluteFill, Sequence, useCurrentFrame } from 'remotion';
+import { BG } from './constants';
+import { GlobalProgress } from './atoms';
 import { Opening } from './Opening';
 import { Problem } from './Problem';
-import { AppReveal } from './AppReveal';
-import { HowItWorks } from './HowItWorks';
-import { Leaderboard } from './Leaderboard';
-import { Summit } from './Summit';
-import { Manifesto } from './Manifesto';
-import { Outro } from './Outro';
+import { SolutionSplit } from './SolutionSplit';
+import { AppScene } from './AppScene';
+import { Writing } from './Writing';
+import { G50 } from './G50';
+import { FranceScene } from './FranceScene';
+import { Final } from './Final';
+
+// Scene boundaries (frames at 30fps)
+const S1 = 0;
+const S2 = 90;
+const S3 = 270;
+const S4 = 450;
+const S5 = 630;
+const S6 = 780;
+const S7 = 960;
+const S8 = 1080;
+const TOTAL = 1800;
+
+// Cross-fade overlay between scenes
+const Fade: React.FC<{ at: number }> = ({ at }) => {
+  const frame = useCurrentFrame();
+  const op = frame >= at && frame < at + 8 ? 1 - (frame - at) / 8 :
+             frame >= at - 8 && frame < at  ? (frame - (at - 8)) / 8 : 0;
+  if (op <= 0) return null;
+  return <AbsoluteFill style={{ backgroundColor: '#FFFFFF', opacity: op, zIndex: 50, pointerEvents: 'none' }} />;
+};
 
 export const MandatZero: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: BLACK }}>
-      {/* 0–7s: Cinematic opening — particles converge into the logo */}
-      <Sequence from={0} durationInFrames={210}>
+    <AbsoluteFill style={{ backgroundColor: BG }}>
+
+      {/* S1 — Opening (0–90) */}
+      <Sequence from={S1} durationInFrames={S2 - S1 + 8}>
         <Opening />
       </Sequence>
 
-      {/* 7–17s: The problem — nepotism statistics */}
-      <Sequence from={210} durationInFrames={300}>
+      {/* S2 — Problem (90–270) */}
+      <Sequence from={S2} durationInFrames={S3 - S2 + 8}>
         <Problem />
       </Sequence>
 
-      {/* 17–26s: The solution — app mockup */}
-      <Sequence from={510} durationInFrames={270}>
-        <AppReveal />
+      {/* S3 — Solution Split (270–450) */}
+      <Sequence from={S3} durationInFrames={S4 - S3 + 8}>
+        <SolutionSplit />
       </Sequence>
 
-      {/* 26–36s: How it works — 4 steps */}
-      <Sequence from={780} durationInFrames={300}>
-        <HowItWorks />
+      {/* S4 — App Scene (450–630) */}
+      <Sequence from={S4} durationInFrames={S5 - S4 + 8}>
+        <AppScene />
       </Sequence>
 
-      {/* 36–44s: National leaderboard */}
-      <Sequence from={1080} durationInFrames={240}>
-        <Leaderboard />
+      {/* S5 — Writing (630–780) */}
+      <Sequence from={S5} durationInFrames={S6 - S5 + 8}>
+        <Writing />
       </Sequence>
 
-      {/* 44–52s: G50 Summit reveal */}
-      <Sequence from={1320} durationInFrames={240}>
-        <Summit />
+      {/* S6 — G50 (780–960) */}
+      <Sequence from={S6} durationInFrames={S7 - S6 + 8}>
+        <G50 />
       </Sequence>
 
-      {/* 52–57s: The manifesto — word by word impact */}
-      <Sequence from={1560} durationInFrames={150}>
-        <Manifesto />
+      {/* S7 — France Scene (960–1080) */}
+      <Sequence from={S7} durationInFrames={S8 - S7 + 8}>
+        <FranceScene />
       </Sequence>
 
-      {/* 57–60s: Outro — logo, URL, CTA */}
-      <Sequence from={1710} durationInFrames={90}>
-        <Outro />
+      {/* S8 — Final (1080–1800) */}
+      <Sequence from={S8} durationInFrames={TOTAL - S8}>
+        <Final />
       </Sequence>
+
+      {/* Cross-fade dips between scenes */}
+      <Fade at={S2} />
+      <Fade at={S3} />
+      <Fade at={S4} />
+      <Fade at={S5} />
+      <Fade at={S6} />
+      <Fade at={S7} />
+      <Fade at={S8} />
+
+      {/* Global progress bar */}
+      <GlobalProgress total={TOTAL} />
     </AbsoluteFill>
   );
 };

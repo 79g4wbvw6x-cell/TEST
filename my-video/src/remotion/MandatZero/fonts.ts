@@ -1,41 +1,29 @@
 import { continueRender, delayRender, staticFile } from 'remotion';
 
-let fontHandleBebas: ReturnType<typeof delayRender> | null = null;
-let fontHandleInter: ReturnType<typeof delayRender> | null = null;
 let loaded = false;
+const handles: ReturnType<typeof delayRender>[] = [];
 
 export const loadLocalFonts = () => {
   if (loaded) return;
   loaded = true;
 
-  fontHandleBebas = delayRender('Loading BebasNeue font');
-  fontHandleInter = delayRender('Loading Inter font');
+  const faces = [
+    new FontFace('Syne', `url(${staticFile('fonts/Syne-800.woff2')}) format('woff2')`,        { weight: '800', style: 'normal' }),
+    new FontFace('Syne', `url(${staticFile('fonts/Syne-800-ext.woff2')}) format('woff2')`,    { weight: '700', style: 'normal' }),
+    new FontFace('DMSans', `url(${staticFile('fonts/DMSans-400.woff2')}) format('woff2')`,    { weight: '400', style: 'normal' }),
+    new FontFace('DMSans', `url(${staticFile('fonts/DMSans-400-ext.woff2')}) format('woff2')`,{ weight: '500', style: 'normal' }),
+    new FontFace('DMSans', `url(${staticFile('fonts/DMSans-700.woff2')}) format('woff2')`,    { weight: '700', style: 'normal' }),
+    new FontFace('DMSans', `url(${staticFile('fonts/DMSans-700-ext.woff2')}) format('woff2')`,{ weight: '800', style: 'normal' }),
+  ];
 
-  const bebas = new FontFace(
-    'BebasNeue',
-    `url(${staticFile('fonts/BebasNeue.woff2')}) format('woff2'),
-     url(${staticFile('fonts/BebasNeue-latin-ext.woff2')}) format('woff2')`,
-    { weight: '400', style: 'normal' },
-  );
+  const h = delayRender('Loading fonts');
+  handles.push(h);
 
-  const interReg = new FontFace(
-    'Inter',
-    `url(${staticFile('fonts/Inter-Regular.woff2')}) format('woff2')`,
-    { weight: '400', style: 'normal' },
-  );
-
-  const interBold = new FontFace(
-    'Inter',
-    `url(${staticFile('fonts/Inter-700.woff2')}) format('woff2')`,
-    { weight: '700', style: 'normal' },
-  );
-
-  Promise.all([bebas.load(), interReg.load(), interBold.load()]).then((fonts) => {
-    fonts.forEach((f) => document.fonts.add(f));
-    if (fontHandleBebas) continueRender(fontHandleBebas);
-    if (fontHandleInter) continueRender(fontHandleInter);
+  Promise.all(faces.map((f) => f.load())).then((loaded) => {
+    loaded.forEach((f) => document.fonts.add(f));
+    handles.forEach((hh) => continueRender(hh));
   });
 };
 
-export const BEBAS = 'BebasNeue, Arial Black, sans-serif';
-export const INTER = 'Inter, Arial, sans-serif';
+export const SYNE   = "'Syne', 'Arial Black', sans-serif";
+export const DM     = "'DMSans', 'Arial', sans-serif";

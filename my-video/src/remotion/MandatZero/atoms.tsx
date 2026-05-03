@@ -2,243 +2,177 @@ import React, { useMemo } from 'react';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { ORANGE } from './constants';
 
-export const seededRandom = (seed: number): number => {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
+// ── Seeded RNG ────────────────────────────────────────────────────────────────
+export const sr = (seed: number) => { const x = Math.sin(seed + 1) * 10000; return x - Math.floor(x); };
+
+// ── Spring helper ─────────────────────────────────────────────────────────────
+export const sp = (frame: number, fps: number, delay = 0, damping = 14, stiffness = 120, mass = 1) =>
+  spring({ frame: frame - delay, fps, config: { damping, stiffness, mass } });
+
+// ── Interpolate with clamp ────────────────────────────────────────────────────
+export const ic = (v: number, i: [number, number], o: [number, number], easing?: (t: number) => number) =>
+  interpolate(v, i, o, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing });
+
+// ── Scene wrapper — fades in over 8f, out over 6f ────────────────────────────
+export const SceneWrap: React.FC<{ children: React.ReactNode; dur: number; bg?: string }> = ({
+  children, dur, bg = '#FFFFFF',
+}) => {
+  const frame = useCurrentFrame();
+  const opacity = Math.min(
+    ic(frame, [0, 8], [0, 1]),
+    ic(frame, [dur - 6, dur], [1, 0]),
+  );
+  return <AbsoluteFill style={{ backgroundColor: bg, opacity }}>{children}</AbsoluteFill>;
 };
 
-// ─── Particle Field ────────────────────────────────────────────────────────────
-export const ParticleField: React.FC<{
-  count?: number;
-  color?: string;
-  converge?: number;
-  centerX?: number;
-  centerY?: number;
-  maxOpacity?: number;
-}> = ({ count = 60, color = ORANGE, converge = 0, centerX = 540, centerY = 960, maxOpacity = 0.6 }) => {
+// ── Orange underline that draws itself ────────────────────────────────────────
+export const OrangeLine: React.FC<{ startFrame: number; width?: number; height?: number }> = ({
+  startFrame, width = '100%' as unknown as number, height = 4,
+}) => {
   const frame = useCurrentFrame();
+  const pct = ic(frame, [startFrame, startFrame + 20], [0, 1], Easing.out(Easing.cubic));
+  return (
+    <div style={{
+      height,
+      width: typeof width === 'number' ? pct * width : width,
+      maxWidth: typeof width === 'number' ? undefined : `${pct * 100}%`,
+      backgroundColor: ORANGE,
+      borderRadius: 2,
+    }} />
+  );
+};
 
+// ── Character-by-character reveal ─────────────────────────────────────────────
+export const CharReveal: React.FC<{
+  text: string;
+  startFrame: number;
+  framesPerChar?: number;
+  style?: React.CSSProperties;
+}> = ({ text, startFrame, framesPerChar = 1, style }) => {
+  const frame = useCurrentFrame();
+  return (
+    <span style={{ display: 'inline-block', ...style }}>
+      {text.split('').map((ch, i) => {
+        const f0 = startFrame + i * framesPerChar;
+        const op = ic(frame, [f0, f0 + 3], [0, 1]);
+        return (
+          <span key={i} style={{ display: 'inline-block', opacity: op, whiteSpace: ch === ' ' ? 'pre' : undefined }}>
+            {ch === ' ' ? ' ' : ch}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
+
+// ── Word-by-word reveal ───────────────────────────────────────────────────────
+export const WordReveal: React.FC<{
+  text: string;
+  startFrame: number;
+  framesPerWord?: number;
+  style?: React.CSSProperties;
+}> = ({ text, startFrame, framesPerWord = 6, style }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const words = text.split(' ');
+  return (
+    <span style={{ display: 'inline', ...style }}>
+      {words.map((w, i) => {
+        const delay = startFrame + i * framesPerWord;
+        const s = sp(frame, fps, delay, 22, 240);
+        const y = ic(s, [0, 1], [14, 0]);
+        return (
+          <span key={i} style={{ display: 'inline-block', opacity: s, transform: `translateY(${y}px)` }}>
+            {w}{i < words.length - 1 ? ' ' : ''}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
+
+// ── Spring-enter text block ───────────────────────────────────────────────────
+export const SpringText: React.FC<{
+  children: React.ReactNode;
+  delay: number;
+  fromY?: number;
+  fromX?: number;
+  fromScale?: number;
+  damping?: number;
+  stiffness?: number;
+  style?: React.CSSProperties;
+}> = ({ children, delay, fromY = 40, fromX = 0, fromScale = 1, damping = 14, stiffness = 120, style }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const s = sp(frame, fps, delay, damping, stiffness);
+  const y = ic(s, [0, 1], [fromY, 0]);
+  const x = ic(s, [0, 1], [fromX, 0]);
+  const scale = ic(s, [0, 1], [fromScale, 1]);
+  return (
+    <div style={{ opacity: s, transform: `translateY(${y}px) translateX(${x}px) scale(${scale})`, ...style }}>
+      {children}
+    </div>
+  );
+};
+
+// ── Floating geometric shape (oscillates forever) ─────────────────────────────
+export const FloatShape: React.FC<{
+  x: number; y: number; size: number; shape: 'circle' | 'square';
+  color: string; phase: number; speed?: number; opacity?: number;
+}> = ({ x, y, size, shape, color, phase, speed = 0.05, opacity = 0.18 }) => {
+  const frame = useCurrentFrame();
+  const dy = Math.sin(frame * speed + phase) * 18;
+  const dx = Math.cos(frame * speed * 0.7 + phase) * 10;
+  const rot = frame * speed * 15 + phase * 30;
+  return (
+    <div style={{
+      position: 'absolute',
+      left: x - size / 2,
+      top: y - size / 2 + dy,
+      transform: `translateX(${dx}px) rotate(${rot}deg)`,
+      width: size,
+      height: size,
+      borderRadius: shape === 'circle' ? '50%' : 4,
+      backgroundColor: color,
+      opacity,
+      pointerEvents: 'none',
+    }} />
+  );
+};
+
+// ── Particle burst ────────────────────────────────────────────────────────────
+export const Burst: React.FC<{ startFrame: number; count?: number; color?: string; cx?: number; cy?: number }> = ({
+  startFrame, count = 30, color = ORANGE, cx = 540, cy = 960,
+}) => {
+  const frame = useCurrentFrame();
   const particles = useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => ({
-        x: seededRandom(i * 7.3) * 1080,
-        y: seededRandom(i * 13.1) * 1920,
-        size: seededRandom(i * 3.7) * 2.5 + 0.8,
-        speed: seededRandom(i * 5.9) * 0.6 + 0.15,
-        angle: seededRandom(i * 11.3) * Math.PI * 2,
-        opacity: seededRandom(i * 17.7) * 0.5 + 0.2,
-      })),
+    () => Array.from({ length: count }, (_, i) => ({
+      angle: (i / count) * Math.PI * 2 + sr(i) * 0.5,
+      speed: sr(i * 7) * 300 + 80,
+      size: sr(i * 3) * 10 + 5,
+    })),
     [count],
   );
-
   return (
-    <svg width={1080} height={1920} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+    <svg width={1080} height={1920} style={{ position: 'absolute', pointerEvents: 'none' }}>
       {particles.map((p, i) => {
-        const drift = frame * p.speed;
-        const bx = p.x + Math.cos(p.angle + drift * 0.018) * 28;
-        const by = p.y + Math.sin(p.angle + drift * 0.018) * 28;
-        const x = bx + (centerX - bx) * converge;
-        const y = by + (centerY - by) * converge;
-        return (
-          <circle
-            key={i}
-            cx={x}
-            cy={y}
-            r={p.size * (1 + converge * 1.5)}
-            fill={color}
-            opacity={Math.min(p.opacity * maxOpacity * (1 - converge * 0.4), 1)}
-          />
-        );
+        const t = ic(frame, [startFrame, startFrame + 20], [0, 1], Easing.out(Easing.cubic));
+        const fadeOut = ic(frame, [startFrame + 8, startFrame + 20], [1, 0]);
+        const px = cx + Math.cos(p.angle) * p.speed * t;
+        const py = cy + Math.sin(p.angle) * p.speed * t;
+        return <circle key={i} cx={px} cy={py} r={p.size * (1 - t * 0.5)} fill={color} opacity={fadeOut * 0.7} />;
       })}
     </svg>
   );
 };
 
-// ─── Glow Orb ──────────────────────────────────────────────────────────────────
-export const GlowOrb: React.FC<{
-  x: number;
-  y: number;
-  radius: number;
-  color: string;
-  opacity?: number;
-}> = ({ x, y, radius, color, opacity = 0.3 }) => (
-  <div
-    style={{
-      position: 'absolute',
-      left: x - radius,
-      top: y - radius,
-      width: radius * 2,
-      height: radius * 2,
-      borderRadius: '50%',
-      background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-      opacity,
-      pointerEvents: 'none',
-    }}
-  />
-);
-
-// ─── Glitch Text ───────────────────────────────────────────────────────────────
-export const GlitchText: React.FC<{ text: string; style?: React.CSSProperties }> = ({ text, style }) => {
+// ── Global progress bar ───────────────────────────────────────────────────────
+export const GlobalProgress: React.FC<{ total: number }> = ({ total }) => {
   const frame = useCurrentFrame();
-  const active = (frame % 9 < 3) || (frame % 23 < 2);
-  const gx = active ? (seededRandom(frame * 1.3) - 0.5) * 18 : 0;
-  const gy = active ? (seededRandom(frame * 2.7) - 0.5) * 4 : 0;
-
+  const pct = ic(frame, [0, total], [0, 100]);
   return (
-    <div style={{ position: 'relative', display: 'inline-block', ...style }}>
-      <span style={{ position: 'relative', zIndex: 2 }}>{text}</span>
-      {active && (
-        <>
-          <span
-            style={{
-              position: 'absolute',
-              inset: 0,
-              transform: `translate(${gx}px, ${gy}px)`,
-              color: '#FF2244',
-              opacity: 0.55,
-              mixBlendMode: 'screen',
-              zIndex: 1,
-            }}
-          >
-            {text}
-          </span>
-          <span
-            style={{
-              position: 'absolute',
-              inset: 0,
-              transform: `translate(${-gx * 0.8}px, ${-gy}px)`,
-              color: '#22CCFF',
-              opacity: 0.45,
-              mixBlendMode: 'screen',
-              zIndex: 1,
-            }}
-          >
-            {text}
-          </span>
-        </>
-      )}
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, backgroundColor: 'rgba(255,107,43,0.15)', zIndex: 100 }}>
+      <div style={{ width: `${pct}%`, height: '100%', backgroundColor: ORANGE, borderRadius: 2 }} />
     </div>
   );
-};
-
-// ─── Draw Line ─────────────────────────────────────────────────────────────────
-export const DrawLine: React.FC<{
-  progress: number;
-  color?: string;
-  thickness?: number;
-  width?: number;
-}> = ({ progress, color = ORANGE, thickness = 3, width = 400 }) => (
-  <div
-    style={{
-      width: progress * width,
-      height: thickness,
-      backgroundColor: color,
-      borderRadius: thickness,
-      transition: 'none',
-    }}
-  />
-);
-
-// ─── Vignette ──────────────────────────────────────────────────────────────────
-export const Vignette: React.FC<{ opacity?: number }> = ({ opacity = 0.5 }) => (
-  <AbsoluteFill
-    style={{
-      background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${opacity}) 100%)`,
-      pointerEvents: 'none',
-    }}
-  />
-);
-
-// ─── Scanlines ─────────────────────────────────────────────────────────────────
-export const Scanlines: React.FC<{ opacity?: number }> = ({ opacity = 0.04 }) => (
-  <AbsoluteFill
-    style={{
-      backgroundImage: `repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0,0,0,${opacity * 20}) 3px,
-        rgba(0,0,0,${opacity * 20}) 4px
-      )`,
-      pointerEvents: 'none',
-    }}
-  />
-);
-
-// ─── Noise Grain ───────────────────────────────────────────────────────────────
-export const FilmGrain: React.FC = () => {
-  const frame = useCurrentFrame();
-  const offset = (frame * 137) % 1000;
-  return (
-    <AbsoluteFill
-      style={{
-        opacity: 0.025,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='${offset}'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        backgroundSize: '200px 200px',
-        pointerEvents: 'none',
-      }}
-    />
-  );
-};
-
-// ─── Word Impact ───────────────────────────────────────────────────────────────
-export const ImpactWord: React.FC<{
-  text: string;
-  delay: number;
-  color: string;
-  fontSize: number;
-  fontFamily: string;
-}> = ({ text, delay, color, fontSize, fontFamily }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const s = spring({
-    frame: frame - delay,
-    fps,
-    config: { damping: 11, stiffness: 280, mass: 0.9 },
-  });
-
-  const scale = interpolate(s, [0, 1], [1.35, 1]);
-  const opacity = interpolate(frame - delay, [0, 4], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  return (
-    <div
-      style={{
-        fontFamily,
-        fontSize,
-        fontWeight: 900,
-        color,
-        lineHeight: 1,
-        letterSpacing: '-2px',
-        textTransform: 'uppercase',
-        transform: `scale(${scale})`,
-        opacity,
-        display: 'inline-block',
-      }}
-    >
-      {text}
-    </div>
-  );
-};
-
-// ─── Animated Count ────────────────────────────────────────────────────────────
-export const AnimatedCount: React.FC<{
-  from: number;
-  to: number;
-  startFrame: number;
-  endFrame: number;
-  locale?: string;
-  style?: React.CSSProperties;
-}> = ({ from, to, startFrame, endFrame, locale = 'fr-FR', style }) => {
-  const frame = useCurrentFrame();
-  const progress = interpolate(frame, [startFrame, endFrame], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: Easing.out(Easing.cubic),
-  });
-  const value = Math.floor(from + (to - from) * progress);
-  return <span style={style}>{value.toLocaleString(locale)}</span>;
 };

@@ -1,199 +1,149 @@
 import React from 'react';
-import { BEBAS, INTER, loadLocalFonts } from './fonts';
-import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { CHARCOAL, NAVY, ORANGE, WHITE } from './constants';
-import { AnimatedCount, GlitchText } from './atoms';
-
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+import { loadLocalFonts, SYNE, DM } from './fonts';
+import { BG, NAVY, ORANGE, GRAY } from './constants';
+import { ic, sp, WordReveal, SceneWrap, OrangeLine } from './atoms';
 
 loadLocalFonts();
+
+// ── Senate dome SVG — drawn with strokeDashoffset ─────────────────────────────
+const SenateDome: React.FC<{ progress: number }> = ({ progress }) => {
+  // Simplified: semicircle dome + column rectangles + steps
+  // Total "virtual" stroke length = 1000 units
+
+  return (
+    <svg width={380} height={300} viewBox="0 0 380 300" style={{ display: 'block' }}>
+      <defs>
+        <style>{`
+          .dome-path { fill: none; stroke: ${NAVY}; stroke-width: 3; stroke-linecap: round; }
+        `}</style>
+      </defs>
+
+      {/* Dome semicircle */}
+      <path
+        className="dome-path"
+        d="M 60 200 A 130 130 0 0 1 320 200"
+        strokeDasharray={450}
+        strokeDashoffset={450 * (1 - Math.min(progress * 3, 1))}
+      />
+
+      {/* Columns */}
+      {[80, 115, 150, 185, 220, 255, 290].map((x, i) => {
+        const p2 = Math.max(0, Math.min((progress - 0.33) * 3, 1));
+        const colH = p2 * 70;
+        return <rect key={i} x={x} y={200} width={6} height={colH} fill={NAVY} opacity={0.9} />;
+      })}
+
+      {/* Steps */}
+      {[0, 1, 2].map((i) => {
+        const p3 = Math.max(0, Math.min((progress - 0.66) * 3, 1));
+        return (
+          <rect key={i}
+            x={40 - i * 12}
+            y={270 + i * 8}
+            width={300 + i * 24}
+            height={7}
+            fill={NAVY}
+            opacity={0.7 * p3}
+          />
+        );
+      })}
+
+      {/* Flagpole */}
+      <line
+        x1={190} y1={70}
+        x2={190} y2={200}
+        stroke={NAVY}
+        strokeWidth={2}
+        opacity={Math.max(0, (progress - 0.5) * 2)}
+      />
+      <rect
+        x={190} y={70}
+        width={30} height={20}
+        fill={ORANGE}
+        opacity={Math.max(0, (progress - 0.6) * 2.5)}
+      />
+    </svg>
+  );
+};
+
+// ── Padlock SVG ───────────────────────────────────────────────────────────────
+const Padlock: React.FC<{ progress: number }> = ({ progress }) => {
+  const p1 = Math.min(progress * 2, 1);
+  const p2 = Math.max(0, (progress - 0.5) * 2);
+  return (
+    <svg width={70} height={80} viewBox="0 0 70 80">
+      {/* Body */}
+      <rect x={8} y={36} width={54} height={38} rx={6} fill="none" stroke={ORANGE} strokeWidth={3} opacity={p2} />
+      {/* Arc (shackle) */}
+      <path
+        d="M 18 36 L 18 22 A 17 17 0 0 1 52 22 L 52 36"
+        fill="none" stroke={ORANGE} strokeWidth={3} strokeLinecap="round"
+        strokeDasharray={80}
+        strokeDashoffset={80 * (1 - p1)}
+      />
+      {/* Keyhole */}
+      <circle cx={35} cy={58} r={5} fill={ORANGE} opacity={p2} />
+      <rect x={32} y={58} width={6} height={9} fill={ORANGE} opacity={p2} />
+    </svg>
+  );
+};
 
 export const Problem: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const dur = 120; // local duration
 
-  // Scene in / out
-  const sceneIn = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const sceneOut = interpolate(frame, [270, 300], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const opacity = sceneIn * sceneOut;
+  const domeProg  = ic(frame, [0, 40], [0, 1]);
+  const wordStart = 40;
 
-  const titleSpring = spring({ frame: frame - 5, fps, config: { damping: 22, stiffness: 280 } });
-  const titleY = interpolate(titleSpring, [0, 1], [-50, 0]);
+  const pistonS   = sp(frame, fps, 65, 6, 280, 1);
+  const pistonSc  = interpolate(pistonS, [0, 0.7, 1], [0.7, 1.05, 1.0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
-  const stat1Spring = spring({ frame: frame - 30, fps, config: { damping: 20, stiffness: 240 } });
-  const stat1Y = interpolate(stat1Spring, [0, 1], [40, 0]);
+  const lockProg  = ic(frame, [80, 100], [0, 1]);
 
-  // Nepotism bar: 0 → 70%
-  const barPct = interpolate(frame, [80, 160], [0, 70], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: Easing.out(Easing.cubic),
-  });
-
-  const pistonSpring = spring({ frame: frame - 165, fps, config: { damping: 12, stiffness: 220, mass: 1 } });
-
-  // Separator line
-  const sepLine = interpolate(frame, [20, 50], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const exitSc    = ic(frame, [114, 120], [1, 0.95]);
+  const exitOp    = ic(frame, [114, 120], [1, 0]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: WHITE, opacity }}>
-      {/* Top accent */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 8, backgroundColor: ORANGE }} />
+    <SceneWrap dur={dur} bg={BG}>
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 60px', gap: 32 }}>
+        <div style={{ opacity: exitOp, transform: `scale(${exitSc})`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
 
-      <AbsoluteFill
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 72px',
-          gap: 0,
-        }}
-      >
-        {/* CHAQUE ANNÉE */}
-        <div
-          style={{
-            opacity: titleSpring,
-            transform: `translateY(${titleY}px)`,
-            fontFamily: BEBAS,
-            fontSize: 52,
+          {/* Senate dome */}
+          <SenateDome progress={domeProg} />
+
+          {/* "Le pouvoir politique" word by word */}
+          <div style={{ fontFamily: DM, fontSize: 44, color: GRAY, textAlign: 'center', lineHeight: 1.4 }}>
+            <WordReveal text="Le pouvoir politique" startFrame={wordStart} framesPerWord={6} />
+          </div>
+
+          {/* EST VERROUILLÉ. impact */}
+          <div style={{
+            transform: `scale(${pistonSc})`,
+            opacity: pistonS,
+            fontFamily: SYNE,
+            fontSize: 88,
+            fontWeight: 800,
             color: NAVY,
-            letterSpacing: '10px',
-            marginBottom: 4,
-          }}
-        >
-          CHAQUE ANNÉE
-        </div>
-
-        {/* Orange separator */}
-        <div
-          style={{
-            width: sepLine * 280,
-            height: 3,
-            backgroundColor: ORANGE,
-            marginBottom: 20,
-            borderRadius: 2,
-          }}
-        />
-
-        {/* Counter */}
-        <div
-          style={{
-            opacity: stat1Spring,
-            transform: `translateY(${stat1Y}px)`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: BEBAS,
-              fontSize: 116,
-              color: ORANGE,
-              lineHeight: 1,
-              letterSpacing: '-2px',
-            }}
-          >
-            <AnimatedCount from={0} to={600000} startFrame={35} endFrame={120} />
-          </div>
-          <div
-            style={{
-              fontFamily: INTER,
-              fontSize: 26,
-              fontWeight: 600,
-              color: NAVY,
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-              marginTop: 4,
-            }}
-          >
-            stages distribués en France
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ width: '100%', height: 1, backgroundColor: '#E0E0E0', margin: '36px 0' }} />
-
-        {/* Nepotism stat */}
-        <div style={{ width: '100%', opacity: interpolate(frame, [70, 95], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: 10,
-              fontFamily: INTER,
-              fontSize: 20,
-              color: CHARCOAL,
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>Obtenus par le réseau</span>
-            <span style={{ fontWeight: 800, color: ORANGE }}>{Math.round(barPct)}%</span>
-          </div>
-          <div style={{ height: 18, backgroundColor: '#EBEBEB', borderRadius: 9, overflow: 'hidden' }}>
-            <div
-              style={{
-                height: '100%',
-                width: `${barPct}%`,
-                background: `linear-gradient(90deg, ${ORANGE} 0%, #FF4500 100%)`,
-                borderRadius: 9,
-                boxShadow: `0 0 16px ${ORANGE}66`,
-              }}
-            />
-          </div>
-          <div
-            style={{
-              marginTop: 10,
-              fontFamily: INTER,
-              fontSize: 14,
-              color: '#999',
-              letterSpacing: '1px',
-            }}
-          >
-            Source: Observatoire des inégalités
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div style={{ width: '100%', height: 1, backgroundColor: '#E0E0E0', margin: '32px 0' }} />
-
-        {/* LE PISTON DOMINE */}
-        <div
-          style={{
-            opacity: pistonSpring,
-            transform: `scale(${interpolate(pistonSpring, [0, 1], [0.85, 1])})`,
             textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: BEBAS,
-              fontSize: 104,
-              color: NAVY,
-              letterSpacing: '-1px',
-              lineHeight: 1,
-            }}
-          >
-            <GlitchText text="LE PISTON" />
+            lineHeight: 1,
+            letterSpacing: '-2px',
+          }}>
+            EST VERROUILLÉ.
           </div>
-          <div
-            style={{
-              fontFamily: BEBAS,
-              fontSize: 42,
-              color: CHARCOAL,
-              letterSpacing: '8px',
-              marginTop: -4,
-            }}
-          >
-            DOMINE LA FRANCE
+
+          <OrangeLine startFrame={70} width={520} />
+
+          {/* Padlock */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <Padlock progress={lockProg} />
+            <div style={{ fontFamily: DM, fontSize: 36, color: GRAY, fontWeight: 500 }}>
+              Pas de mérite.<br />Juste le réseau.
+            </div>
           </div>
         </div>
       </AbsoluteFill>
-
-      {/* Bottom accent */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 8, backgroundColor: ORANGE }} />
-    </AbsoluteFill>
+    </SceneWrap>
   );
 };

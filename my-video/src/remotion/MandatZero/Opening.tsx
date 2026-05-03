@@ -1,132 +1,123 @@
 import React from 'react';
-import { BEBAS, loadLocalFonts } from './fonts';
-import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { BLACK, ORANGE, WHITE } from './constants';
-import { GlowOrb, ParticleField, Vignette } from './atoms';
-
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+import { loadLocalFonts, SYNE } from './fonts';
+import { BLACK, NAVY, ORANGE, BG } from './constants';
+import { FloatShape, ic, sp } from './atoms';
 
 loadLocalFonts();
+
+// Floating particles config — deterministic
+const SHAPES = [
+  { x: 120,  y: 280,  size: 28, shape: 'circle' as const, phase: 0.0 },
+  { x: 960,  y: 340,  size: 22, shape: 'square' as const, phase: 1.1 },
+  { x: 200,  y: 700,  size: 18, shape: 'circle' as const, phase: 2.2 },
+  { x: 880,  y: 620,  size: 32, shape: 'square' as const, phase: 0.7 },
+  { x: 80,   y: 1100, size: 14, shape: 'circle' as const, phase: 3.1 },
+  { x: 1000, y: 1000, size: 24, shape: 'circle' as const, phase: 1.8 },
+  { x: 300,  y: 1400, size: 20, shape: 'square' as const, phase: 0.4 },
+  { x: 780,  y: 1350, size: 16, shape: 'circle' as const, phase: 2.5 },
+  { x: 540,  y: 180,  size: 12, shape: 'square' as const, phase: 1.4 },
+  { x: 160,  y: 1650, size: 26, shape: 'circle' as const, phase: 3.7 },
+  { x: 920,  y: 1580, size: 19, shape: 'square' as const, phase: 0.9 },
+  { x: 460,  y: 1740, size: 15, shape: 'circle' as const, phase: 2.0 },
+  { x: 700,  y: 200,  size: 21, shape: 'circle' as const, phase: 1.6 },
+  { x: 370,  y: 440,  size: 17, shape: 'square' as const, phase: 3.3 },
+  { x: 840,  y: 880,  size: 30, shape: 'circle' as const, phase: 0.2 },
+  { x: 220,  y: 960,  size: 13, shape: 'square' as const, phase: 2.8 },
+  { x: 680,  y: 1500, size: 25, shape: 'circle' as const, phase: 1.2 },
+  { x: 100,  y: 1850, size: 11, shape: 'square' as const, phase: 3.9 },
+  { x: 980,  y: 1780, size: 23, shape: 'circle' as const, phase: 0.6 },
+  { x: 540,  y: 1920, size: 18, shape: 'square' as const, phase: 2.1 },
+];
 
 export const Opening: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Particle convergence 2.5s → 4.8s
-  const converge = interpolate(frame, [75, 144], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: Easing.in(Easing.quad),
-  });
+  // ── Phase 0: horizontal white line draws from center (0-10)
+  const lineW = ic(frame, [0, 10], [0, 1080], (t) => t);
 
-  // White flash at frame 145
-  const flash = interpolate(frame, [143, 146, 155, 170], [0, 1, 0.4, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  // ── MANDAT slams from top (frame 12), ZÉRO from bottom (frame 18)
+  const mandatS = sp(frame, fps, 12, 8, 200);
+  const zeroS   = sp(frame, fps, 18, 8, 200);
+  const mandatY = ic(mandatS, [0, 1], [-300, 0]);
+  const zeroY   = ic(zeroS,   [0, 1], [300, 0]);
 
-  // MANDAT slides from left
-  const mandatSpring = spring({ frame: frame - 148, fps, config: { damping: 18, stiffness: 220, mass: 0.9 } });
-  const mandatX = interpolate(mandatSpring, [0, 1], [-500, 0]);
+  // ── Scale overshoot at 30 — both words pulse 1→1.08→1
+  const pulse = sp(frame, fps, 30, 6, 300);
+  const scaleWords = interpolate(pulse, [0, 0.6, 1], [1, 1.08, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
-  // ZÉRO slides from right
-  const zeroSpring = spring({ frame: frame - 155, fps, config: { damping: 14, stiffness: 200, mass: 1.1 } });
-  const zeroX = interpolate(zeroSpring, [0, 1], [500, 0]);
+  // ── Flash at 45-46
+  const flash = interpolate(frame, [45, 46, 48, 52], [0, 1, 0.6, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
-  // Line draws itself after lock
-  const lineProgress = interpolate(frame, [175, 200], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-    easing: Easing.out(Easing.cubic),
-  });
+  // ── Text: white → navy at 54
+  const textColorProgress = ic(frame, [50, 56], [0, 1]);
+  const textColor = textColorProgress > 0.5 ? NAVY : '#FFFFFF';
 
-  // Tagline fades in
-  const taglineOpacity = interpolate(frame, [190, 210], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  // ── Orange underline under ZÉRO draws left→right (60-90)
+  const underlineW = ic(frame, [60, 80], [0, 400]);
 
-  // Overall scene fade-out at the end (last 10 frames)
-  const sceneOut = interpolate(frame, [200, 210], [1, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  // Glow orb radius breathes
-  const glowRadius = 260 + Math.sin(frame * 0.05) * 30;
+  // ── Particles appear after flash
+  const particleOp = ic(frame, [50, 70], [0, 1]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: BLACK, opacity: sceneOut }}>
-      {/* Ambient glow */}
-      <GlowOrb x={540} y={960} radius={glowRadius} color={ORANGE} opacity={interpolate(frame, [0, 90, 144], [0, 0.12, 0.5], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })} />
+    <AbsoluteFill style={{ backgroundColor: ic(frame, [47, 54], [0, 1]) > 0.5 ? BG : BLACK }}>
 
-      {/* Drifting particles that converge */}
-      <ParticleField count={90} color={ORANGE} converge={converge} centerX={540} centerY={920} maxOpacity={0.7} />
-      <ParticleField count={30} color={WHITE} converge={converge * 0.6} centerX={540} centerY={920} maxOpacity={0.3} />
+      {/* Floating shapes */}
+      {SHAPES.map((s, i) => (
+        <div key={i} style={{ opacity: particleOp }}>
+          <FloatShape {...s} color={ORANGE} />
+        </div>
+      ))}
 
-      {/* Flash */}
-      <AbsoluteFill style={{ backgroundColor: WHITE, opacity: flash, mixBlendMode: 'screen' }} />
+      {/* White flash */}
+      <AbsoluteFill style={{ backgroundColor: '#FFFFFF', opacity: flash, pointerEvents: 'none' }} />
 
-      {/* ── Logo ── */}
+      {/* Horizontal line */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: (1080 - lineW) / 2,
+        width: lineW,
+        height: 2,
+        backgroundColor: '#FFFFFF',
+        opacity: ic(frame, [0, 8], [0, 1]) * ic(frame, [42, 46], [1, 0]),
+      }} />
+
+      {/* MANDAT + ZÉRO */}
       <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
-        {/* MANDAT */}
-        <div
-          style={{
-            fontFamily: BEBAS,
-            fontSize: 148,
-            color: WHITE,
-            letterSpacing: '8px',
-            lineHeight: 1,
-            transform: `translateX(${mandatX}px)`,
-            opacity: mandatSpring,
-          }}
-        >
-          MANDAT
-        </div>
+        <div style={{
+          transform: `translateY(${mandatY}px) scale(${scaleWords})`,
+          fontFamily: SYNE,
+          fontSize: 110,
+          fontWeight: 900,
+          color: textColor,
+          letterSpacing: '4px',
+          lineHeight: 1,
+          opacity: mandatS,
+        }}>MANDAT</div>
 
-        {/* ZÉRO — larger, orange */}
-        <div
-          style={{
-            fontFamily: BEBAS,
-            fontSize: 210,
-            color: ORANGE,
-            letterSpacing: '-4px',
-            lineHeight: 0.88,
-            transform: `translateX(${zeroX}px)`,
-            opacity: zeroSpring,
-            textShadow: `0 0 80px ${ORANGE}66`,
-          }}
-        >
-          ZÉRO
-        </div>
+        <div style={{
+          transform: `translateY(${zeroY}px) scale(${scaleWords})`,
+          fontFamily: SYNE,
+          fontSize: 110,
+          fontWeight: 900,
+          color: ic(frame, [50, 58], [0, 1]) > 0.5 ? ORANGE : '#FFFFFF',
+          letterSpacing: '4px',
+          lineHeight: 1,
+          opacity: zeroS,
+        }}>ZÉRO</div>
 
-        {/* Horizontal line */}
-        <div
-          style={{
-            marginTop: 24,
-            height: 3,
-            width: lineProgress * 560,
-            backgroundColor: ORANGE,
-            borderRadius: 3,
-            boxShadow: `0 0 12px ${ORANGE}`,
-          }}
-        />
-
-        {/* Tagline */}
-        <div
-          style={{
-            marginTop: 24,
-            fontFamily: BEBAS,
-            fontSize: 28,
-            color: 'rgba(255,255,255,0.55)',
-            letterSpacing: '10px',
-            opacity: taglineOpacity,
-          }}
-        >
-          L'ASCENSEUR RÉPUBLICAIN 2.0
-        </div>
+        {/* Orange underline */}
+        <div style={{
+          width: underlineW,
+          height: 4,
+          backgroundColor: ORANGE,
+          borderRadius: 2,
+          marginTop: 8,
+          alignSelf: 'center',
+        }} />
       </AbsoluteFill>
-
-      <Vignette opacity={0.6} />
     </AbsoluteFill>
   );
 };
