@@ -146,21 +146,19 @@ export const Final: React.FC = () => {
           transform: `scale(${ic(logoS, [0, 1], [0.7, 1]) * breathSc})`,
           opacity: logoS,
         }}>
-          {/* MZ monogram */}
-          <div style={{
-            width: 100,
-            height: 100,
-            borderRadius: 24,
-            backgroundColor: NAVY,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 24,
-            boxShadow: `0 20px 60px ${NAVY}44`,
-          }}>
-            <div style={{ fontFamily: SYNE, fontSize: 44, fontWeight: 900, color: '#FFFFFF', lineHeight: 1, letterSpacing: '-2px' }}>
-              MZ
-            </div>
+          {/* Real logo */}
+          <div style={{ marginBottom: 28, filter: `drop-shadow(0 20px 40px ${NAVY}44)` }}>
+            <svg width={140} height={140} viewBox="0 0 140 140">
+              <rect width={140} height={140} rx={32} fill={NAVY} />
+              {/* White circle ring */}
+              <circle cx={70} cy={70} r={46} fill="none" stroke="#FFFFFF" strokeWidth={14} strokeLinecap="round"
+                strokeDasharray="289"
+                strokeDashoffset="58"
+                transform="rotate(-45 70 70)"
+              />
+              {/* Orange diagonal bar */}
+              <line x1={22} y1={118} x2={118} y2={22} stroke={ORANGE} strokeWidth={18} strokeLinecap="round" />
+            </svg>
           </div>
 
           <div style={{ fontFamily: SYNE, fontSize: 52, fontWeight: 900, color: NAVY, letterSpacing: '2px', lineHeight: 1 }}>

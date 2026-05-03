@@ -55,11 +55,14 @@ export const SolutionSplit: React.FC = () => {
 
       {/* UNE SEULE RÈGLE. — final state */}
       <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: finalOp, zIndex: 10 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: SYNE, fontSize: 96, fontWeight: 800, color: NAVY, letterSpacing: '-2px', lineHeight: 1 }}>
-            <CharReveal text="UNE SEULE RÈGLE." startFrame={120} framesPerChar={1} />
+        <div style={{ textAlign: 'center', width: 1080 }}>
+          <div style={{ fontFamily: SYNE, fontSize: 96, fontWeight: 800, color: NAVY, letterSpacing: '-1px', lineHeight: 1.1 }}>
+            <div style={{ whiteSpace: 'nowrap' }}><CharReveal text="UNE SEULE" startFrame={120} framesPerChar={1} /></div>
+            <div style={{ whiteSpace: 'nowrap' }}><CharReveal text="RÈGLE." startFrame={129} framesPerChar={1} /></div>
           </div>
-          <OrangeLine startFrame={138} width={580} />
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <OrangeLine startFrame={138} width={520} />
+          </div>
         </div>
       </AbsoluteFill>
 
