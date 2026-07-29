@@ -133,7 +133,14 @@ Config.WaterLevel = {
 }
 
 Config.Water = {
-    wavesIntensity = 3.0   -- agitation de la mer pendant la crue (1.0 = normal)
+    wavesIntensity = 3.0,  -- agitation de la mer pendant la crue (1.0 = normal)
+
+    -- Paliers de hauteur pré-générés dans stream/water_lvl_XX.xml.
+    -- Générés par tools/generate_water_levels.py, qui affiche la liste
+    -- exacte à recopier ici. Tant que cette table est vide, l'eau ne
+    -- montera pas : c'est le rechargement de ces fichiers qui produit
+    -- l'effet visuel.
+    levels = {}
 }
 
 -- Zones inondées : utilisées pour les dégâts, les blips d'alerte et les effets

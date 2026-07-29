@@ -1,78 +1,126 @@
 -- ============================================================
--- MONTÉE D'EAU RÉELLE — manipulation des water quads
+-- MONTÉE D'EAU RÉELLE
 --
--- GTA V découpe son eau en "quads" définis dans water.xml (océan,
--- rivières, plans d'eau). FiveM expose des natives pour lire et
--- MODIFIER la hauteur de ces quads en temps réel.
+-- Deux mécanismes, essayés dans cet ordre :
 --
--- C'est la vraie eau du moteur : vagues, nage, bateaux, reflets,
--- noyade native — tout fonctionne, contrairement à un faux plan
--- d'eau en prop.
+--  1. LoadWaterFromPath : recharge un water.xml complet. C'est la
+--     SEULE méthode qui force le moteur à re-rendre l'eau. On
+--     pré-génère un fichier par palier de hauteur (voir
+--     tools/generate_water_levels.py) et on charge celui qui
+--     correspond au niveau courant.
 --
--- Limite honnête: on ne peut relever que les quads QUI EXISTENT.
--- L'eau montera donc là où le jeu en connaît déjà (océan, rivières,
--- réservoir), inondant les côtes et les berges à mesure que le
--- niveau grimpe. Pour de l'eau en plein centre-ville, là où aucun
--- quad n'existe, il faut streamer un water.xml élargi (voir README).
+--  2. SetWaterQuadLevel : modifie les quads en mémoire. Utilisé en
+--     complément, car ça met à jour la logique de collision/nage
+--     même quand le rendu ne suit pas. Seul, ça ne suffit PAS —
+--     les quads changent mais l'eau reste affichée à sa hauteur
+--     d'origine.
+--
+-- C'est la vraie eau du moteur : on nage dedans, les bateaux
+-- flottent, la noyade native fonctionne.
 -- ============================================================
 
-local quadsCached   = false
-local originalLevels = {}   -- [quadIndex] = niveau d'origine
-local appliedLevel  = nil
+local quadsCached    = false
+local originalLevels = {}
+local loadedLevelFile = nil
+local appliedQuadLevel = nil
 
--- Toutes les natives water quad de FiveM ne sont pas garanties selon
--- la version de l'artefact serveur. On vérifie leur présence plutôt
--- que de planter en silence.
-local hasWaterNatives =
+local hasQuadNatives =
     type(GetWaterQuadCount) == 'function' and
-    type(SetWaterQuadLevel) == 'function' and
-    type(GetWaterQuadLevel) == 'function'
+    type(SetWaterQuadLevel) == 'function'
+
+local hasLoadWater = type(LoadWaterFromPath) == 'function'
+
+-- ------------------------------------------------------------
+-- Mécanisme 1 : rechargement de water.xml
+-- ------------------------------------------------------------
+
+-- Trouve le palier pré-généré le plus proche du niveau demandé
+local function nearestLevel(target)
+    local levels = Config.Water and Config.Water.levels
+    if not levels or #levels == 0 then return nil end
+    local best, bestDiff = nil, math.huge
+    for _, v in ipairs(levels) do
+        local d = math.abs(v - target)
+        if d < bestDiff then best, bestDiff = v, d end
+    end
+    return best
+end
+
+local function loadWaterFile(level)
+    if not hasLoadWater then return false end
+    local lvl = nearestLevel(level)
+    if not lvl then return false end
+    if loadedLevelFile == lvl then return true end  -- déjà chargé
+
+    local file = ('stream/water_lvl_%02d.xml'):format(lvl)
+    local ok = LoadWaterFromPath(GetCurrentResourceName(), file)
+    if ok then
+        loadedLevelFile = lvl
+        return true
+    else
+        print(('[lsd_flood] Echec du chargement de %s'):format(file))
+        return false
+    end
+end
+
+local function restoreWaterFile()
+    if not hasLoadWater then return end
+    -- ResetWater remet le water.xml d'origine du jeu
+    if type(ResetWater) == 'function' then
+        ResetWater()
+    elseif Config.Water and Config.Water.baseFile then
+        LoadWaterFromPath(GetCurrentResourceName(), Config.Water.baseFile)
+    end
+    loadedLevelFile = nil
+end
+
+-- ------------------------------------------------------------
+-- Mécanisme 2 : quads en mémoire (complément)
+-- ------------------------------------------------------------
 
 local function cacheOriginalLevels()
     if quadsCached then return true end
-    if not hasWaterNatives then return false end
-
+    if not hasQuadNatives then return false end
     local count = GetWaterQuadCount()
-    if not count or count == 0 then
-        print('[lsd_flood] Aucun water quad trouvé.')
-        return false
-    end
-
+    if not count or count == 0 then return false end
     for i = 0, count - 1 do
-        local ok, lvl = GetWaterQuadLevel(i)
-        if ok and lvl then
-            originalLevels[i] = lvl
-        elseif type(ok) == 'number' then
-            -- certaines versions renvoient directement la valeur
-            originalLevels[i] = ok
-        end
+        local a, b = GetWaterQuadLevel(i)
+        originalLevels[i] = (type(b) == 'number') and b or a
     end
-
     quadsCached = true
-    print(('[lsd_flood] %d water quads mis en cache.'):format(count))
     return true
 end
 
--- Applique un niveau absolu à tous les quads.
--- On ne fait rien si le niveau n'a pas bougé: inutile de spammer
--- les natives à chaque frame.
-local function applyWaterLevel(level)
-    if not hasWaterNatives then return end
+local function applyQuadLevel(level)
+    if not hasQuadNatives then return end
     if not cacheOriginalLevels() then return end
-    if appliedLevel and math.abs(appliedLevel - level) < 0.01 then return end
-
+    if appliedQuadLevel and math.abs(appliedQuadLevel - level) < 0.01 then return end
     for i, _ in pairs(originalLevels) do
         SetWaterQuadLevel(i, level)
     end
-    appliedLevel = level
+    appliedQuadLevel = level
 end
 
-local function restoreWaterLevel()
-    if not hasWaterNatives or not quadsCached then return end
+local function restoreQuadLevels()
+    if not hasQuadNatives or not quadsCached then return end
     for i, lvl in pairs(originalLevels) do
         SetWaterQuadLevel(i, lvl)
     end
-    appliedLevel = nil
+    appliedQuadLevel = nil
+end
+
+-- ------------------------------------------------------------
+-- Application combinée
+-- ------------------------------------------------------------
+
+local function setFloodLevel(level)
+    loadWaterFile(level)
+    applyQuadLevel(level)
+end
+
+local function restoreWater()
+    restoreWaterFile()
+    restoreQuadLevels()
 end
 
 -- ------------------------------------------------------------
@@ -80,10 +128,12 @@ end
 -- ------------------------------------------------------------
 
 CreateThread(function()
-    if not hasWaterNatives then
-        print('[lsd_flood] ATTENTION: natives water quad indisponibles sur cet artefact.')
-        print('[lsd_flood] La montée d\'eau ne sera pas visible. Mettez à jour votre serveur FiveM.')
-        return
+    if not hasLoadWater then
+        print('[lsd_flood] ATTENTION: LoadWaterFromPath indisponible sur cet artefact FiveM.')
+        print('[lsd_flood] La montee d\'eau ne sera pas visible. Mettez a jour votre serveur.')
+    end
+    if not (Config.Water and Config.Water.levels and #Config.Water.levels > 0) then
+        print('[lsd_flood] Aucun palier d\'eau genere. Voir tools/generate_water_levels.py')
     end
 
     while true do
@@ -91,20 +141,19 @@ CreateThread(function()
         local level = GlobalState.lsd_waterLevel
 
         if phase and phase ~= 'idle' and level then
-            applyWaterLevel(level)
-            Wait(200)
+            setFloodLevel(level)
+            Wait(500)
         else
-            if appliedLevel then restoreWaterLevel() end
+            if loadedLevelFile or appliedQuadLevel then restoreWater() end
             Wait(1000)
         end
     end
 end)
 
--- Mer agitée pendant la crue, calme au retour à la normale
 RegisterNetEvent('lsd_flood:phaseChanged', function(phase)
     if type(SetWavesIntensity) ~= 'function' then return end
     if phase == 'rupture' or phase == 'rising' or phase == 'peak' then
-        SetWavesIntensity(Config.Water and Config.Water.wavesIntensity or 3.0)
+        SetWavesIntensity((Config.Water and Config.Water.wavesIntensity) or 3.0)
     elseif phase == 'idle' then
         SetWavesIntensity(1.0)
     end
@@ -112,7 +161,7 @@ end)
 
 AddEventHandler('onResourceStop', function(resName)
     if GetCurrentResourceName() ~= resName then return end
-    restoreWaterLevel()
+    restoreWater()
     if type(SetWavesIntensity) == 'function' then SetWavesIntensity(1.0) end
 end)
 
@@ -121,39 +170,35 @@ end)
 -- ------------------------------------------------------------
 
 if Config.DevCommands then
-    -- Force un niveau d'eau immédiatement, sans lancer l'event.
-    -- Le meilleur moyen de trouver la bonne valeur de peak.
     RegisterCommand('watertest', function(_, args)
-        if not hasWaterNatives then
-            print('[watertest] Natives water quad indisponibles sur cet artefact.')
-            return
-        end
         local lvl = tonumber(args[1])
         if not lvl then
             print('[watertest] Usage: /watertest <niveau_z>   (ex: /watertest 20)')
-            print('[watertest] /watertest reset  pour revenir à la normale')
             return
         end
-        applyWaterLevel(lvl)
-        print(('[watertest] Niveau d\'eau forcé à %.1f'):format(lvl))
+        setFloodLevel(lvl)
+        print(('[watertest] Niveau demande %.1f -> palier charge: %s'):format(
+            lvl, tostring(loadedLevelFile)))
+        if not loadedLevelFile then
+            print('[watertest] Aucun palier charge: les fichiers water_lvl_XX.xml manquent.')
+            print('[watertest] Generez-les avec tools/generate_water_levels.py')
+        end
     end, false)
 
     RegisterCommand('waterreset', function()
-        restoreWaterLevel()
-        print('[waterreset] Niveau d\'eau restauré.')
+        restoreWater()
+        print('[waterreset] Eau restauree.')
     end, false)
 
-    -- Diagnostic: combien de quads, et quel quad sous vos pieds
     RegisterCommand('waterinfo', function()
-        if not hasWaterNatives then
-            print('[waterinfo] Natives water quad indisponibles.')
-            return
+        print(('[waterinfo] LoadWaterFromPath dispo : %s'):format(tostring(hasLoadWater)))
+        print(('[waterinfo] ResetWater dispo        : %s'):format(tostring(type(ResetWater) == 'function')))
+        print(('[waterinfo] Natives quad dispo      : %s'):format(tostring(hasQuadNatives)))
+        if hasQuadNatives then
+            print(('[waterinfo] Nombre de water quads   : %s'):format(GetWaterQuadCount()))
         end
-        print(('[waterinfo] Nombre de water quads : %s'):format(GetWaterQuadCount()))
-        local p = GetEntityCoords(PlayerPedId())
-        if type(GetWaterQuadAtCoords) == 'function' then
-            local q = GetWaterQuadAtCoords(p.x, p.y)
-            print(('[waterinfo] Quad sous vous : %s (-1 = aucun)'):format(tostring(q)))
-        end
+        local n = (Config.Water and Config.Water.levels) and #Config.Water.levels or 0
+        print(('[waterinfo] Paliers generes         : %d'):format(n))
+        print(('[waterinfo] Palier actuellement charge : %s'):format(tostring(loadedLevelFile)))
     end, false)
 end

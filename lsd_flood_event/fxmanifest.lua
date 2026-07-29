@@ -20,4 +20,10 @@ client_scripts {
     'client/dam.lua'
 }
 
+-- Les water_lvl_XX.xml sont générés par tools/generate_water_levels.py.
+-- Ils doivent être déclarés ici pour que LoadWaterFromPath puisse les lire.
+files {
+    'stream/water_lvl_*.xml'
+}
+
 lua54 'yes'
