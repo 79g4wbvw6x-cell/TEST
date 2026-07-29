@@ -380,16 +380,61 @@ if Config.DevCommands then
 
         if hit == 1 then
             print(('[damscan] Point visé      : vector3(%.2f, %.2f, %.2f)'):format(endCoords.x, endCoords.y, endCoords.z))
-            if entity and entity ~= 0 then
+            -- Le raycast peut renvoyer un handle non nul mais invalide sur de
+            -- la géométrie de map : GetEntityModel plante dessus. D'où la garde.
+            if entity and entity ~= 0 and DoesEntityExist(entity) then
                 print(('[damscan] Modèle visé     : %s (hash)'):format(GetEntityModel(entity)))
             else
-                print('[damscan] Aucune entité: géométrie de map pure.')
-                print('[damscan] -> CreateModelSwap/Hide ne fonctionnera PAS ici.')
-                print('[damscan] -> Il faut un override de ymap/ydr streamé (voir README).')
+                print('[damscan] Pas d\'entité script exploitable ici.')
+                print('[damscan] -> Utilisez /damhide <modele> pour tester un nom.')
             end
         else
             print('[damscan] Rien touché (visez le barrage de plus près).')
         end
+    end, false)
+
+    -- Test empirique d'un nom de modèle de map.
+    -- Sur de la géométrie de map, le raycast ne renvoie pas d'entité
+    -- exploitable : impossible de lire le hash. La seule façon de valider un
+    -- nom, c'est d'essayer de le masquer et de regarder si ça disparaît.
+    local testHidden = {}
+
+    RegisterCommand('damhide', function(_, args)
+        local name = args[1]
+        local radius = tonumber(args[2]) or 40.0
+        if not name then
+            print('[damhide] Usage: /damhide <nom_du_modele> [rayon]')
+            print('[damhide] Sans argument de modèle, teste toute la liste du config.')
+            return
+        end
+
+        local p = GetEntityCoords(PlayerPedId())
+        local hash = GetHashKey(name)
+        CreateModelHide(p.x, p.y, p.z, radius, hash, true)
+        testHidden[#testHidden + 1] = { hash = hash, x = p.x, y = p.y, z = p.z, r = radius }
+        print(('[damhide] Masquage tenté : %s (rayon %.0f)'):format(name, radius))
+        print('[damhide] Regardez autour de vous. /damunhide pour tout restaurer.')
+    end, false)
+
+    -- Teste d'un coup tous les noms de Config.Rupture.modelHide.models
+    RegisterCommand('damhideall', function()
+        local p = GetEntityCoords(PlayerPedId())
+        local r = Config.Rupture.modelHide.radius or 40.0
+        for _, name in ipairs(Config.Rupture.modelHide.models or {}) do
+            local hash = GetHashKey(name)
+            CreateModelHide(p.x, p.y, p.z, r, hash, true)
+            testHidden[#testHidden + 1] = { hash = hash, x = p.x, y = p.y, z = p.z, r = r }
+            print(('[damhideall] -> %s'):format(name))
+        end
+        print('[damhideall] Terminé. /damunhide pour restaurer.')
+    end, false)
+
+    RegisterCommand('damunhide', function()
+        for _, h in ipairs(testHidden) do
+            RemoveModelHide(h.x, h.y, h.z, h.r, h.hash, false)
+        end
+        print(('[damunhide] %d masquage(s) annulé(s).'):format(#testHidden))
+        testHidden = {}
     end, false)
 
     -- Teste un couple dict/effet de particules à l'endroit où vous êtes.
