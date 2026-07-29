@@ -3,6 +3,16 @@ ESX = exports['es_extended']:getSharedObject()
 local running = false
 local submersionState = {} -- [source] = { since = os.time() or false }
 
+-- Copie modifiable des durées, éditable en direct depuis le panel admin
+-- sans toucher au fichier de config.
+local durations = {
+    alert    = Config.Phases.alert,
+    rupture  = Config.Phases.rupture,
+    rising   = Config.Phases.rising,
+    peak     = Config.Phases.peak,
+    receding = Config.Phases.receding
+}
+
 GlobalState.lsd_floodPhase = 'idle'
 GlobalState.lsd_waterLevel = Config.WaterLevel.base
 GlobalState.lsd_phaseEndsAt = 0
@@ -28,37 +38,89 @@ end
 local function runFloodSequence()
     running = true
 
-    setPhase('alert', Config.Phases.alert)
+    setPhase('alert', durations.alert)
     TriggerClientEvent('lsd_flood:alert', -1)
-    Wait(Config.Phases.alert * 1000)
+    Wait(durations.alert * 1000)
     if not running then return end
 
     -- Rupture: explosion, effondrement, départ de la vague.
     -- L'eau ne monte pas encore, mais la vague voyage déjà vers la ville.
-    setPhase('rupture', Config.Phases.rupture)
+    setPhase('rupture', durations.rupture)
     -- Horodatage partagé: permet à un joueur qui se connecte pendant la crue
     -- de retrouver la position exacte de la vague au lieu de la rater.
     GlobalState.lsd_ruptureAt = os.time()
     TriggerClientEvent('lsd_flood:damRupture', -1)
-    Wait(Config.Phases.rupture * 1000)
+    Wait(durations.rupture * 1000)
     if not running then return end
 
-    setPhase('rising', Config.Phases.rising)
-    lerpWater(Config.WaterLevel.base, Config.WaterLevel.peak, Config.Phases.rising)
+    setPhase('rising', durations.rising)
+    lerpWater(Config.WaterLevel.base, Config.WaterLevel.peak, durations.rising)
     if not running then return end
 
-    setPhase('peak', Config.Phases.peak)
-    Wait(Config.Phases.peak * 1000)
+    setPhase('peak', durations.peak)
+    Wait(durations.peak * 1000)
     if not running then return end
 
-    setPhase('receding', Config.Phases.receding)
-    lerpWater(Config.WaterLevel.peak, Config.WaterLevel.base, Config.Phases.receding)
+    setPhase('receding', durations.receding)
+    lerpWater(Config.WaterLevel.peak, Config.WaterLevel.base, durations.receding)
     if not running then return end
 
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
     running = false
 end
+
+-- ============================================================
+-- API exposée au panel admin (server/nui.lua). Toute la validation de
+-- permission a déjà été faite par nui.lua avant d'appeler ces fonctions :
+-- elles ne revérifient pas l'ACE, elles exécutent.
+-- ============================================================
+
+local function forcePhase(phase)
+    running = (phase ~= 'idle')
+    if phase == 'idle' then
+        setPhase('idle', 0)
+        GlobalState.lsd_waterLevel = Config.WaterLevel.base
+    elseif phase == 'peak' then
+        setPhase('peak', durations.peak)
+        GlobalState.lsd_waterLevel = Config.WaterLevel.peak
+    elseif phase == 'rising' then
+        setPhase('rising', durations.rising)
+    elseif phase == 'receding' then
+        setPhase('receding', durations.receding)
+    elseif phase == 'rupture' then
+        GlobalState.lsd_ruptureAt = os.time()
+        setPhase('rupture', durations.rupture)
+        TriggerClientEvent('lsd_flood:damRupture', -1)
+    elseif phase == 'alert' then
+        setPhase('alert', durations.alert)
+        TriggerClientEvent('lsd_flood:alert', -1)
+    end
+end
+
+local function setWaterLevel(level)
+    GlobalState.lsd_waterLevel = level
+end
+
+local function setDurations(d)
+    for k, v in pairs(d) do
+        if durations[k] ~= nil and type(v) == 'number' and v > 0 then
+            durations[k] = v
+        end
+    end
+end
+
+exports('ForcePhase', forcePhase)
+exports('SetWaterLevel', setWaterLevel)
+exports('SetDurations', setDurations)
+exports('StartFlood', function() if not running then CreateThread(runFloodSequence) end end)
+exports('StopFlood', function()
+    running = false
+    setPhase('idle', 0)
+    GlobalState.lsd_waterLevel = Config.WaterLevel.base
+    GlobalState.lsd_ruptureAt = 0
+    submersionState = {}
+end)
 
 RegisterCommand(Config.AdminCommand, function(source)
     if source ~= 0 and not IsPlayerAceAllowed(source, Config.AdminAce) then

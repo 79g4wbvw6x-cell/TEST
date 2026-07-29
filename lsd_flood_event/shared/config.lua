@@ -7,6 +7,13 @@ Config.AdminCommand = 'startflood'
 Config.StopCommand = 'stopflood'
 Config.AdminAce = 'command.startflood'
 
+-- Panel visuel complet: contrôle de l'event, météo/heure, blackout,
+-- véhicules, armes, outils joueur. Touche par défaut F6.
+Config.AdminPanel = {
+    command = 'floodpanel',
+    key     = 'F6'
+}
+
 -- Coordonnées relevées dans ch3_08.ymap (secteur cityhills_03).
 -- Le barrage se situe autour de x=1662, y=-18, z=157.
 Config.Dam = {
@@ -124,8 +131,24 @@ Config.Rupture = {
 -- ============================================================
 Config.Spectacle = {
 
-    -- Le barrage alimente la ville : il cède, Los Santos s'éteint.
-    blackout = { enabled = true },
+    -- Le barrage alimente la ville : il cède, Los Santos (Sud) s'éteint,
+    -- Blaine County (Nord) reste sur son propre réseau.
+    --
+    -- GTA n'a qu'un interrupteur global pour les lumières artificielles
+    -- (pas de version par zone dans le moteur), donc l'effet est simulé
+    -- par position: chaque client active/désactive SES lumières selon
+    -- l'endroit où IL se trouve. Un joueur au Sud voit le clignotement,
+    -- un joueur au Nord ne le voit jamais — correct puisque le rendu est
+    -- de toute façon local à chaque client.
+    blackout = {
+        enabled     = true,
+        boundaryY   = 500.0,   -- y < boundaryY = Sud (ville) ; y >= boundaryY = Nord (comté)
+                                -- Ajustez si la frontière ne vous convient pas en jeu.
+        flickerOnMin  = 800,   -- ms lumières allumées (min)
+        flickerOnMax  = 2500,  -- ms lumières allumées (max)
+        flickerOffMin = 400,   -- ms lumières éteintes (min)
+        flickerOffMax = 1800   -- ms lumières éteintes (max)
+    },
 
     -- Ambiance visuelle par phase (noms de timecycle du jeu)
     timecycle = {
@@ -218,8 +241,9 @@ Config.DevCommands = true
 --   ~27  = Vespucci, Del Perro, une partie de Strawberry
 --   ~40  = centre-ville touché (très extrême)
 Config.WaterLevel = {
-    base = 0.0,     -- niveau mer normal GTA
-    peak = 26.5
+    base = 0.0,      -- niveau mer normal GTA
+    peak = 150.0     -- quasi toute la ville engloutie; seuls les sommets (Chiliad,
+                      -- Vinewood Hills) dépassent — cohérent avec les points d'évacuation
 }
 
 Config.Water = {
@@ -230,9 +254,8 @@ Config.Water = {
     -- exacte à recopier ici. Tant que cette table est vide, l'eau ne
     -- montera pas : c'est le rechargement de ces fichiers qui produit
     -- l'effet visuel.
-    levels = { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34,
-               36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66,
-               68, 70, 72, 74, 76, 78, 80 }
+    levels = { 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80,
+               85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150 }
 }
 
 -- Zones inondées : utilisées pour les dégâts, les blips d'alerte et les effets

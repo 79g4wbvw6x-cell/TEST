@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>lsd_flood_event — Panel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+  html, body { width: 100%; height: 100%; background: transparent; overflow: hidden; }
+  #app { display: none; position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+         width: 780px; max-height: 90vh; background: rgba(15,17,22,0.94); border: 1px solid #2a2f3a;
+         border-radius: 10px; color: #e8e8ec; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+  #app.open { display: flex; flex-direction: column; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px;
+           border-bottom: 1px solid #2a2f3a; background: linear-gradient(90deg,#0e2233,#0a1622); border-radius: 10px 10px 0 0; }
+  header h1 { font-size: 16px; color: #5ec8ff; letter-spacing: .5px; }
+  header .sub { font-size: 11px; color: #7d8794; margin-top: 2px; }
+  header button { background: #ff4d4d; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 14px; border-bottom: 1px solid #2a2f3a; }
+  nav button { background: #1b2029; border: 1px solid #2a2f3a; color: #b7bfca; padding: 7px 12px;
+               border-radius: 6px; cursor: pointer; font-size: 12px; }
+  nav button.active { background: #164a6b; color: #cdeeff; border-color: #2b7bab; }
+  main { padding: 16px 18px; overflow-y: auto; flex: 1; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+  .row label { font-size: 12px; color: #9aa4b2; min-width: 130px; }
+  select, input[type=text], input[type=number] { background: #1b2029; border: 1px solid #2a2f3a; color: #e8e8ec;
+        padding: 6px 8px; border-radius: 5px; font-size: 12px; }
+  input[type=range] { flex: 1; }
+  button.act { background: #1e5f8a; border: none; color: white; padding: 7px 14px; border-radius: 6px;
+               cursor: pointer; font-size: 12px; }
+  button.act:hover { background: #2879ac; }
+  button.act.danger { background: #7a2a2a; }
+  button.act.danger:hover { background: #a33636; }
+  button.act.green { background: #256b3f; }
+  button.act.green:hover { background: #2f8a51; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .cat { font-size: 12px; color: #5ec8ff; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .cat:first-child { margin-top: 0; }
+  .chip { background: #1b2029; border: 1px solid #2a2f3a; color: #d3d8df; padding: 6px 8px; border-radius: 5px;
+          font-size: 11px; cursor: pointer; text-align: center; }
+  .chip:hover { background: #22364a; border-color: #2b7bab; }
+  .status { font-size: 11px; color: #7d8794; padding: 8px 10px; background: #12151c; border-radius: 6px; margin-bottom: 14px; }
+  .status b { color: #5ec8ff; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>LAND ACT — PANEL DE CONTRÔLE</h1>
+      <div class="sub">Rupture du barrage &amp; outils admin — F6 pour fermer</div>
+    </div>
+    <button onclick="closePanel()">Fermer (ECHAP)</button>
+  </header>
+
+  <nav id="tabs"></nav>
+
+  <main>
+    <div class="status" id="statusBar">Phase: <b id="stPhase">idle</b> — Niveau d'eau: <b id="stLevel">0</b> m</div>
+
+    <div class="tab" data-tab="event">
+      <div class="cat">Séquence</div>
+      <div class="row"><button class="act green" onclick="send('startFlood')">Démarrer l'event</button>
+      <button class="act danger" onclick="send('stopFlood')">Arrêter</button></div>
+
+      <div class="cat">Forcer une phase</div>
+      <div class="row">
+        <button class="act" onclick="send('forcePhase','alert')">Alerte</button>
+        <button class="act" onclick="send('forcePhase','rupture')">Rupture</button>
+        <button class="act" onclick="send('forcePhase','rising')">Montée</button>
+        <button class="act" onclick="send('forcePhase','peak')">Pic</button>
+        <button class="act" onclick="send('forcePhase','receding')">Décrue</button>
+        <button class="act" onclick="send('forcePhase','idle')">Normal</button>
+      </div>
+
+      <div class="cat">Niveau d'eau manuel</div>
+      <div class="row">
+        <label>Niveau (m)</label>
+        <input type="range" id="waterSlider" min="0" max="150" value="0" oninput="document.getElementById('waterVal').innerText=this.value">
+        <span id="waterVal">0</span>
+        <button class="act" onclick="send('setWaterLevel', parseFloat(document.getElementById('waterSlider').value))">Appliquer</button>
+      </div>
+
+      <div class="cat">Durées de phase (secondes)</div>
+      <div class="row"><label>Alerte</label><input type="number" id="durAlert" value="45"><label>Rupture</label><input type="number" id="durRupture" value="25"></div>
+      <div class="row"><label>Montée</label><input type="number" id="durRising" value="480"><label>Pic</label><input type="number" id="durPeak" value="120"></div>
+      <div class="row"><label>Décrue</label><input type="number" id="durReceding" value="300">
+      <button class="act" onclick="send('setDurations', {alert:+durAlert.value, rupture:+durRupture.value, rising:+durRising.value, peak:+durPeak.value, receding:+durReceding.value})">Appliquer les durées</button></div>
+    </div>
+
+    <div class="tab" data-tab="weather">
+      <div class="cat">Météo</div>
+      <div class="grid" id="weatherGrid"></div>
+      <div class="cat">Heure</div>
+      <div class="row">
+        <label>Heure</label><input type="number" id="hh" min="0" max="23" value="12">
+        <label>Minute</label><input type="number" id="mm" min="0" max="59" value="0">
+        <button class="act" onclick="send('setTime', {h:+hh.value, m:+mm.value})">Appliquer</button>
+      </div>
+      <div class="row">
+        <button class="act" onclick="send('freezeTime', true)">Figer l'heure</button>
+        <button class="act" onclick="send('freezeTime', false)">Reprendre le cycle</button>
+      </div>
+    </div>
+
+    <div class="tab" data-tab="blackout">
+      <div class="cat">Blackout Sud / Nord</div>
+      <div class="row"><label>Activé</label>
+        <button class="act green" onclick="send('setBlackoutEnabled', true)">ON</button>
+        <button class="act danger" onclick="send('setBlackoutEnabled', false)">OFF</button>
+      </div>
+      <div class="row"><label>Frontière Y</label>
+        <input type="number" id="boundaryY" value="500">
+        <button class="act" onclick="send('setBlackoutBoundary', +boundaryY.value)">Appliquer</button>
+      </div>
+      <div class="status">Sud = y &lt; frontière (clignote). Nord = y &ge; frontière (épargné). Basé sur votre position, par joueur.</div>
+    </div>
+
+    <div class="tab" data-tab="vehicles">
+      <div id="vehicleCatalog"></div>
+    </div>
+
+    <div class="tab" data-tab="weapons">
+      <div class="row">
+        <button class="act green" onclick="send('giveAllWeapons')">Donner toutes les armes</button>
+        <button class="act" onclick="send('maxAmmo')">Munitions max</button>
+        <button class="act danger" onclick="send('removeAllWeapons')">Retirer toutes les armes</button>
+      </div>
+      <div id="weaponCatalog"></div>
+    </div>
+
+    <div class="tab" data-tab="player">
+      <div class="cat">Joueur</div>
+      <div class="row">
+        <button class="act green" onclick="send('heal')">Soigner</button>
+        <button class="act green" onclick="send('revive')">Ranimer</button>
+        <button class="act" onclick="send('toggleGodmode')">Invincibilité (bascule)</button>
+        <button class="act" onclick="send('toggleInvisible')">Invisible (bascule)</button>
+        <button class="act" onclick="send('toggleFreeze')">Geler (bascule)</button>
+        <button class="act danger" onclick="send('kill')">Se tuer</button>
+      </div>
+      <div class="cat">Téléportation — points d'évacuation</div>
+      <div class="grid" id="evacTeleports"></div>
+      <div class="cat">Téléportation — zones inondées</div>
+      <div class="grid" id="zoneTeleports"></div>
+      <div class="cat">Téléportation — barrage</div>
+      <div class="row"><button class="act" onclick="send('teleportDam')">Aller au barrage</button></div>
+      <div class="cat">Coordonnées manuelles</div>
+      <div class="row">
+        <input type="number" id="tpX" placeholder="X"><input type="number" id="tpY" placeholder="Y"><input type="number" id="tpZ" placeholder="Z">
+        <button class="act" onclick="send('teleportCoords', {x:+tpX.value, y:+tpY.value, z:+tpZ.value})">Téléporter</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const WEATHERS = ['EXTRASUNNY','CLEAR','NEUTRAL','CLOUDS','SMOG','FOGGY','OVERCAST',
+                   'RAIN','THUNDER','CLEARING','SNOW','BLIZZARD','SNOWLIGHT','XMAS','HALLOWEEN'];
+
+const TABS = [
+  {id:'event', label:'Événement'},
+  {id:'weather', label:'Météo / Heure'},
+  {id:'blackout', label:'Blackout'},
+  {id:'vehicles', label:'Véhicules'},
+  {id:'weapons', label:'Armes'},
+  {id:'player', label:'Joueur'}
+];
+
+function send(action, data) {
+  fetch(`https://${GetParentResourceName()}/nuiAction`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action, data: data === undefined ? null : data })
+  });
+}
+
+function closePanel() { send('close'); document.getElementById('app').classList.remove('open'); }
+
+function selectTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+}
+
+function buildNav() {
+  const nav = document.getElementById('tabs');
+  TABS.forEach((t,i) => {
+    const b = document.createElement('button');
+    b.textContent = t.label; b.dataset.tab = t.id;
+    b.onclick = () => selectTab(t.id);
+    nav.appendChild(b);
+    if (i === 0) b.classList.add('active');
+  });
+}
+
+function buildWeather() {
+  const g = document.getElementById('weatherGrid');
+  WEATHERS.forEach(w => {
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = w;
+    c.onclick = () => send('setWeather', w);
+    g.appendChild(c);
+  });
+}
+
+function buildCatalog(containerId, catalog, actionName, labelKey) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  Object.keys(catalog).forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'cat'; h.textContent = cat;
+    el.appendChild(h);
+    const g = document.createElement('div');
+    g.className = 'grid';
+    catalog[cat].forEach(item => {
+      const c = document.createElement('div');
+      c.className = 'chip'; c.textContent = item;
+      c.onclick = () => send(actionName, item);
+      g.appendChild(c);
+    });
+    el.appendChild(g);
+  });
+}
+
+function buildTeleports(containerId, list, actionName) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  list.forEach(p => {
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = p.label;
+    c.onclick = () => send(actionName, p);
+    el.appendChild(c);
+  });
+}
+
+window.addEventListener('message', (e) => {
+  const msg = e.data;
+  if (msg.type === 'open') {
+    document.getElementById('app').classList.add('open');
+    if (msg.vehicles) buildCatalog('vehicleCatalog', msg.vehicles, 'spawnVehicle');
+    if (msg.weapons) buildCatalog('weaponCatalog', msg.weapons, 'giveWeapon');
+    if (msg.evacPoints) buildTeleports('evacTeleports', msg.evacPoints, 'teleportCoords');
+    if (msg.floodZones) buildTeleports('zoneTeleports', msg.floodZones, 'teleportCoords');
+  } else if (msg.type === 'close') {
+    document.getElementById('app').classList.remove('open');
+  } else if (msg.type === 'state') {
+    document.getElementById('stPhase').innerText = msg.phase || 'idle';
+    document.getElementById('stLevel').innerText = (msg.level || 0).toFixed(1);
+  }
+});
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+
+buildNav();
+buildWeather();
+</script>
+</body>
+</html>

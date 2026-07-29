@@ -35,11 +35,16 @@ local function loadModel(hash)
 end
 
 -- ============================================================
--- 1. BLACKOUT — le barrage alimente la ville, il cède, tout s'éteint
+-- 1. BLACKOUT — Sud (ville) clignote à l'infini, Nord (comté) épargné.
+-- Basé sur la position du joueur local: chaque client décide pour
+-- lui-même, ce qui est correct puisque SetArtificialLightsState est
+-- un interrupteur global côté client (pas de version par zone dans
+-- le moteur).
 -- ============================================================
 
-local function setBlackout(state)
-    if not S.blackout.enabled then return end
+local blackoutFlickerActive = false
+
+local function setLights(state)
     if blackoutOn == state then return end
     SetArtificialLightsState(state)
     if type(SetArtificialLightsStateAffectsVehicles) == 'function' then
@@ -47,6 +52,34 @@ local function setBlackout(state)
     end
     blackoutOn = state
 end
+
+local function isInSouth()
+    local coords = GetEntityCoords(PlayerPedId())
+    return coords.y < S.blackout.boundaryY
+end
+
+-- Boucle de clignotement: tourne en continu tant que l'event est actif.
+-- Ne coupe les lumières que si le joueur est au Sud à cet instant précis;
+-- redevient transparente (lumières normales) dès qu'il passe au Nord.
+CreateThread(function()
+    while true do
+        if S.blackout.enabled and phase ~= 'idle' and isInSouth() then
+            blackoutFlickerActive = true
+            setLights(true)
+            Wait(math.random(S.blackout.flickerOffMin, S.blackout.flickerOffMax))
+            if phase ~= 'idle' and isInSouth() then
+                setLights(false)
+                Wait(math.random(S.blackout.flickerOnMin, S.blackout.flickerOnMax))
+            end
+        else
+            if blackoutFlickerActive then
+                setLights(false)
+                blackoutFlickerActive = false
+            end
+            Wait(500)
+        end
+    end
+end)
 
 -- ============================================================
 -- 2. CIEL D'APOCALYPSE — timecycle + foudre
@@ -264,12 +297,10 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(newPhase)
         broadcast(S.messages.alert, 12000)
 
     elseif newPhase == 'rupture' then
-        setBlackout(true)
         applyTimecycle(S.timecycle.disaster, 1.0)
         broadcast(S.messages.rupture, 8000)
 
     elseif newPhase == 'rising' then
-        setBlackout(true)
         applyTimecycle(S.timecycle.disaster, 1.0)
         broadcast(S.messages.rising, 25000)
 
@@ -281,7 +312,6 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(newPhase)
         broadcast(S.messages.receding, 20000)
 
     elseif newPhase == 'idle' then
-        setBlackout(false)
         applyTimecycle(nil)
         cleanupEntities()
         panicked = {}
@@ -289,17 +319,18 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(newPhase)
 end)
 
 -- Resynchro pour un joueur qui arrive en cours d'event
+-- (le blackout se réapplique de lui-même via la boucle CreateThread,
+-- qui lit `phase` en continu — rien à faire ici pour lui)
 RegisterNetEvent('lsd_flood:syncState', function(p)
     phase = p or 'idle'
     if phase == 'rupture' or phase == 'rising' or phase == 'peak' then
-        setBlackout(true)
         applyTimecycle(S.timecycle.disaster, 1.0)
     end
 end)
 
 AddEventHandler('onResourceStop', function(resName)
     if GetCurrentResourceName() ~= resName then return end
-    setBlackout(false)
+    setLights(false)
     ClearTimecycleModifier()
     cleanupEntities()
     if S._underwaterFx then StopScreenEffect('CamPushInNeutral') end

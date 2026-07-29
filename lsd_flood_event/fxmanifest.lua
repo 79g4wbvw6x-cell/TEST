@@ -7,18 +7,28 @@ version '1.0.0'
 
 shared_scripts {
     '@es_extended/imports.lua',
-    'shared/config.lua'
+    'shared/config.lua',
+    'shared/vehicles.lua',
+    'shared/weapons.lua'
 }
 
 server_scripts {
-    'server/main.lua'
+    'server/main.lua',
+    'server/nui.lua'
 }
 
 client_scripts {
     'client/main.lua',
     'client/water.lua',
     'client/dam.lua',
-    'client/spectacle.lua'
+    'client/spectacle.lua',
+    'client/nui.lua'
+}
+
+ui_page 'html/ui.html'
+
+files {
+    'html/ui.html'
 }
 
 -- Les water_lvl_XX.xml sont générés par tools/generate_water_levels.py.

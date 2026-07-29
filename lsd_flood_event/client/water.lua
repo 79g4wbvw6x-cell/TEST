@@ -185,30 +185,6 @@ if Config.DevCommands then
         end
     end, false)
 
-    -- Charge une variante de flags pour trouver la bonne combinaison.
-    -- GTA applique un test stencil qui empêche l'eau de s'afficher au-dessus
-    -- du terrain : c'est ce qui limite l'inondation aux plages. Ces variantes
-    -- font varier NoStencil / Type / alpha pour identifier la bonne.
-    RegisterCommand('watervariant', function(_, args)
-        local v = args[1]
-        if not v then
-            print('[watervariant] Usage: /watervariant v1|v2|v3|v4|v5|v6')
-            print('  v1 = vanilla (stencil actif)      v4 = Type 1')
-            print('  v2 = sans stencil                 v5 = profondeur limitee')
-            print('  v3 = sans stencil + opaque        v6 = Type 2')
-            return
-        end
-        local file = ('stream/water_var_%s.xml'):format(v)
-        local ok = hasLoadWater and LoadWaterFromPath(GetCurrentResourceName(), file)
-        loadedLevelFile = nil
-        print(('[watervariant] %s -> %s'):format(file, ok and 'CHARGE' or 'ECHEC'))
-        if ok then
-            print('[watervariant] Regardez autour de vous. Eau a hauteur 30.')
-            print('[watervariant] Verifiez: y a-t-il du volume sous la surface ?')
-            print('[watervariant]           l\'eau couvre-t-elle la ville ?')
-        end
-    end, false)
-
     RegisterCommand('waterreset', function()
         restoreWater()
         print('[waterreset] Eau restauree.')
