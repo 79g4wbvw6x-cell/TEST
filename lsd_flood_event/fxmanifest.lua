@@ -13,7 +13,8 @@ shared_scripts {
 
 server_scripts {
     'server/main.lua',
-    'server/nui.lua'
+    'server/nui.lua',
+    'server/contextmenu.lua'
 }
 
 client_scripts {
@@ -22,7 +23,8 @@ client_scripts {
     'client/dam.lua',
     'client/spectacle.lua',
     'client/nui.lua',
-    'client/combatstance.lua'
+    'client/combatstance.lua',
+    'client/contextmenu.lua'
 }
 
 ui_page 'html/ui.html'

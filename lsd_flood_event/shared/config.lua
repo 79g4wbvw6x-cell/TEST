@@ -231,6 +231,24 @@ Config.Spectacle = {
     }
 }
 
+-- ============================================================
+-- MENU CONTEXTUEL (touche ALT). Actions RP visibles par tous, actions
+-- [Admin] filtrées côté serveur selon Config.AdminAce.
+--
+-- Liste d'animations volontairement COURTE et honnête: je n'ai pas pu
+-- tester ces dict/clip en jeu, seulement les documenter comme
+-- raisonnablement fiables. Utilisez /animtest <dict> <clip> pour en
+-- valider de nouvelles avant de les ajouter ici.
+-- ============================================================
+Config.SelfAnimations = {
+    { label = 'Lever les mains',        dict = 'random@mugging3',                          clip = 'handsup_standing_base' },
+    { label = 'S\'asseoir',             dict = 'amb@world_human_seat_wall_tablet@male@base', clip = 'base' },
+    { label = 'Fumer une cigarette',    dict = 'amb@world_human_smoking@male@male_a@base', clip = 'base' },
+    { label = 'Attendre bras croisés',  dict = 'anim@amb@business@bgen@bgen_no_work@',     clip = 'base' },
+    { label = 'Danser',                 dict = 'dance_fac_ch_bd_am',                        clip = 'dance_fac_ch_bd_am' },
+    { label = 'Applaudir',              dict = 'anim@mp_player_intcelebrationmale@golf_clap', clip = 'golf_clap' }
+}
+
 -- Corrige la démarche "combat stance" qui reste figée (arme à deux
 -- mains, pas raide) après avoir tiré et relâché la visée.
 Config.CombatStanceFix = {

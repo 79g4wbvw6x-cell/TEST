@@ -44,9 +44,23 @@
   .status b { color: #5ec8ff; }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
+
+  /* --- Menu contextuel (touche ALT) --- */
+  #ctxmenu { display: none; position: absolute; width: 260px; background: rgba(12,14,18,0.95);
+          border: 1px solid #2a2f3a; border-radius: 8px; color: #e8e8ec; box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+          max-height: 80vh; overflow-y: auto; }
+  #ctxmenu.open { display: block; }
+  .ctx-section { padding: 8px 0; border-bottom: 1px solid #22262f; }
+  .ctx-section:last-child { border-bottom: none; }
+  .ctx-section h2 { font-size: 10px; color: #5ec8ff; text-transform: uppercase; letter-spacing: .6px; padding: 4px 14px; }
+  .ctx-item { padding: 8px 14px; font-size: 13px; cursor: pointer; color: #d3d8df; }
+  .ctx-item:hover { background: #1c2836; color: #7fd4ff; }
+  .ctx-item.admin { color: #ffb37f; }
+  .ctx-item.admin:hover { background: #2b2016; color: #ffcda0; }
 </style>
 </head>
 <body>
+<div id="ctxmenu"></div>
 <div id="app">
   <header>
     <div>
@@ -248,10 +262,50 @@ window.addEventListener('message', (e) => {
   } else if (msg.type === 'state') {
     document.getElementById('stPhase').innerText = msg.phase || 'idle';
     document.getElementById('stLevel').innerText = (msg.level || 0).toFixed(1);
+  } else if (msg.type === 'ctxOpen') {
+    renderCtx(msg.sections, msg.x || 500, msg.y || 250);
+  } else if (msg.type === 'ctxClose') {
+    document.getElementById('ctxmenu').classList.remove('open');
   }
 });
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closePanel(); closeCtx(); } });
+
+function sendCtx(action, data) {
+  fetch(`https://${GetParentResourceName()}/ctxAction`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ action, data: data === undefined ? null : data })
+  });
+}
+
+function closeCtx() {
+  document.getElementById('ctxmenu').classList.remove('open');
+  sendCtx('close');
+}
+
+function renderCtx(sections, x, y) {
+  const el = document.getElementById('ctxmenu');
+  el.innerHTML = '';
+  (sections || []).forEach(sec => {
+    if (!sec.items || sec.items.length === 0) return;
+    const s = document.createElement('div');
+    s.className = 'ctx-section';
+    const h = document.createElement('h2');
+    h.textContent = sec.title;
+    s.appendChild(h);
+    sec.items.forEach(it => {
+      const d = document.createElement('div');
+      d.className = 'ctx-item' + (it.admin ? ' admin' : '');
+      d.textContent = it.label;
+      d.onclick = () => { sendCtx(it.action, it.data); closeCtx(); };
+      s.appendChild(d);
+    });
+    el.appendChild(s);
+  });
+  el.style.left = Math.min(x, window.innerWidth - 280) + 'px';
+  el.style.top = Math.min(y, window.innerHeight - 400) + 'px';
+  el.classList.add('open');
+}
 
 buildNav();
 buildWeather();
