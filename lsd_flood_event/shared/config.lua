@@ -7,15 +7,17 @@ Config.AdminCommand = 'startflood'
 Config.StopCommand = 'stopflood'
 Config.AdminAce = 'command.startflood'
 
+-- Coordonnées relevées dans ch3_08.ymap (secteur cityhills_03).
+-- Le barrage se situe autour de x=1662, y=-18, z=157.
 Config.Dam = {
     label = 'Barrage de Land Act',
-    coords = vector3(2645.6, 3474.4, 94.5),
+    coords = vector3(1662.3, -18.4, 157.3),   -- ch3_08_dam_slod
 
-    -- Point exact de la brèche (là où l'eau jaillit). À ajuster en jeu avec
-    -- /damscan qui affiche vos coordonnées + le modèle visé.
+    -- Point de la brèche: face aval du mur, d'où l'eau se déverse vers les
+    -- déversoirs. À affiner en jeu avec /damscan une fois sur place.
     breach = {
-        coords  = vector3(2637.0, 3465.0, 62.0),
-        heading = 210.0,  -- direction dans laquelle l'eau est projetée
+        coords  = vector3(1655.0, -30.0, 140.0),
+        heading = 250.0,  -- projection vers l'ouest, dans l'axe des déversoirs
         width   = 18.0    -- largeur de la brèche (nb d'émetteurs répartis dessus)
     }
 }
@@ -79,14 +81,19 @@ Config.Rupture = {
         travelTime = 180,  -- secondes pour aller du barrage aux quartiers bas
         width      = 90.0, -- rayon d'influence de la vague (knockback)
         ptfxScale  = 9.0,
+        -- Trajet calqué sur les déversoirs réels du barrage (relevés dans
+        -- ch3_08.ymap) : l'eau descend en escalier 157 -> 123 -> 91 -> 61,
+        -- puis rejoint les quartiers bas. Les 4 premiers points sont des
+        -- positions exactes du jeu, les suivants sont à affiner en jeu.
         path = {
-            vector3(2637.0, 3465.0, 55.0),
-            vector3(2200.0, 3100.0, 40.0),
-            vector3(1700.0, 2400.0, 30.0),
-            vector3(1100.0, 1400.0, 25.0),
-            vector3( 600.0,  200.0, 20.0),
-            vector3( 300.0, -900.0, 15.0),
-            vector3( 350.0,-1930.0, 10.0)
+            vector3(1655.0,  -30.0, 145.0),  -- brèche du barrage
+            vector3(1577.3,  -35.6, 122.8),  -- ch3_08_weir_03
+            vector3(1433.7,  -63.4,  91.0),  -- ch3_08_weir_02
+            vector3(1192.5,  -93.9,  61.1),  -- ch3_08_weir_01
+            vector3( 900.0, -400.0,  40.0),
+            vector3( 650.0, -900.0,  28.0),
+            vector3( 450.0,-1450.0,  20.0),
+            vector3( 390.0,-1932.0,  12.0)   -- Rancho
         }
     },
 
@@ -140,7 +147,7 @@ Config.Sirens = {
     soundset = 'DLC_HEIST_HACKING_SNAKE_SOUNDS',
     -- fallback: sirène via native PLAY_SOUND_FROM_COORD, réutilise un son d'alarme existant du jeu
     coordsSirens = {
-        vector3(2645.6, 3474.4, 94.5),
+        vector3(1662.3, -18.4, 157.3),  -- barrage
         vector3(390.0, -1932.0, 22.0),
         vector3(280.0, -2780.0, 5.0),
         vector3(-230.0, -2900.0, 5.0),
