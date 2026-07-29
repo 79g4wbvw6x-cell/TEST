@@ -231,6 +231,14 @@ Config.Spectacle = {
     }
 }
 
+-- Corrige la démarche "combat stance" qui reste figée (arme à deux
+-- mains, pas raide) après avoir tiré et relâché la visée.
+Config.CombatStanceFix = {
+    enabled       = true,
+    checkInterval = 150,  -- ms entre chaque vérification
+    graceMs       = 250   -- ms sans viser/tirer avant de forcer le reset
+}
+
 -- Commandes de repérage pour développeur (client-side, lecture seule)
 Config.DevCommands = true
 
@@ -242,8 +250,9 @@ Config.DevCommands = true
 --   ~40  = centre-ville touché (très extrême)
 Config.WaterLevel = {
     base = 0.0,      -- niveau mer normal GTA
-    peak = 150.0     -- quasi toute la ville engloutie; seuls les sommets (Chiliad,
-                      -- Vinewood Hills) dépassent — cohérent avec les points d'évacuation
+    peak = 35.0      -- niveau par défaut de la séquence auto. Ajustable en jeu à
+                      -- tout moment via le panel (F6 > Événement > Niveau d'eau
+                      -- manuel) ou /watertest <niveau>, jusqu'à 150 max.
 }
 
 Config.Water = {

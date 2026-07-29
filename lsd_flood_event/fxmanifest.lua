@@ -21,7 +21,8 @@ client_scripts {
     'client/water.lua',
     'client/dam.lua',
     'client/spectacle.lua',
-    'client/nui.lua'
+    'client/nui.lua',
+    'client/combatstance.lua'
 }
 
 ui_page 'html/ui.html'
