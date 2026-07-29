@@ -45,17 +45,30 @@ QUAD_TEMPLATE = """    <Item>
       <maxX value="{maxx:.0f}" />
       <minY value="{miny:.0f}" />
       <maxY value="{maxy:.0f}" />
-      <Type value="0" />
+      <Type value="{type}" />
       <IsInvisible value="false" />
-      <HasLimitedDepth value="false" />
+      <HasLimitedDepth value="{limited}" />
       <z value="{z:.3f}" />
-      <a1 value="26" />
-      <a2 value="26" />
-      <a3 value="26" />
-      <a4 value="26" />
-      <NoStencil value="false" />
+      <a1 value="{a}" />
+      <a2 value="{a}" />
+      <a3 value="{a}" />
+      <a4 value="{a}" />
+      <NoStencil value="{nostencil}" />
     </Item>
 """
+
+# Combinaisons de flags à tester en jeu. GTA applique un test stencil qui
+# empêche l'eau de s'afficher au-dessus du terrain : c'est très probablement
+# NoStencil qui débloque l'inondation des terres, mais la valeur exacte de
+# Type et de l'alpha se détermine à l'oeil, en jeu.
+VARIANTS = {
+    'v1': dict(type=0, limited='false', a=26,  nostencil='false'),  # vanilla
+    'v2': dict(type=0, limited='false', a=26,  nostencil='true'),   # sans stencil
+    'v3': dict(type=0, limited='false', a=255, nostencil='true'),   # + opaque
+    'v4': dict(type=1, limited='false', a=255, nostencil='true'),   # autre type
+    'v5': dict(type=0, limited='true',  a=255, nostencil='true'),   # profondeur limitée
+    'v6': dict(type=2, limited='false', a=255, nostencil='true'),   # type 2
+}
 
 
 def extract_section(xml: str, tag: str) -> str:
@@ -64,7 +77,7 @@ def extract_section(xml: str, tag: str) -> str:
     return m.group(1) if m else ''
 
 
-def build_grid(level: float, cell: float) -> str:
+def build_grid(level: float, cell: float, flags: dict) -> str:
     """Grille de quads couvrant la carte à la hauteur `level`."""
     out = []
     y = MAP_MIN_Y
@@ -73,18 +86,20 @@ def build_grid(level: float, cell: float) -> str:
         y2 = min(y + cell, MAP_MAX_Y)
         while x < MAP_MAX_X:
             x2 = min(x + cell, MAP_MAX_X)
-            out.append(QUAD_TEMPLATE.format(minx=x, maxx=x2, miny=y, maxy=y2, z=level))
+            out.append(QUAD_TEMPLATE.format(
+                minx=x, maxx=x2, miny=y, maxy=y2, z=level, **flags))
             x = x2
         y = y2
     return ''.join(out)
 
 
-def build_file(level: float, cell: float, calming: str, waves: str) -> str:
+def build_file(level: float, cell: float, calming: str, waves: str,
+               flags: dict) -> str:
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<WaterData>\n'
         '  <WaterQuads>\n'
-        f'{build_grid(level, cell)}'
+        f'{build_grid(level, cell, flags)}'
         '  </WaterQuads>\n'
         f'  <CalmingQuads>{calming}</CalmingQuads>\n'
         f'  <WaveQuads>{waves}</WaveQuads>\n'
@@ -101,6 +116,12 @@ def main() -> int:
     ap.add_argument('--cell', type=float, default=1000.0,
                     help='taille des quads de la grille (defaut 1000)')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--variant', default='v3', choices=sorted(VARIANTS),
+                    help='combinaison de flags a utiliser (defaut v3)')
+    ap.add_argument('--variants-only', action='store_true',
+                    help='genere uniquement les fichiers de test water_var_XX.xml')
+    ap.add_argument('--variant-level', type=float, default=30.0,
+                    help='hauteur utilisee pour les fichiers de test')
     args = ap.parse_args()
 
     if not os.path.isfile(args.source):
@@ -124,15 +145,33 @@ def main() -> int:
     out_dir = os.path.abspath(out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
-    n_grid = len(build_grid(0.0, args.cell).strip().split('</Item>')) - 1
+    n_grid = len(build_grid(0.0, args.cell, VARIANTS['v1']).strip().split('</Item>')) - 1
     print(f'Grille: {n_grid} quads de {args.cell:.0f}x{args.cell:.0f} par palier')
+
+    # Fichiers de diagnostic : même hauteur, flags différents.
+    # Se chargent en jeu avec /watervariant v1 ... v6
+    for name, flags in sorted(VARIANTS.items()):
+        path = os.path.join(out_dir, f'water_var_{name}.xml')
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(build_file(args.variant_level, args.cell, calming, waves, flags))
+    print(f'{len(VARIANTS)} fichiers de test water_var_*.xml ecrits '
+          f'(hauteur {args.variant_level:.0f})')
+
+    if args.variants_only:
+        print('\n--- a tester en jeu ---')
+        for name, flags in sorted(VARIANTS.items()):
+            print(f'    /watervariant {name}   ->  {flags}')
+        return 0
+
+    flags = VARIANTS[args.variant]
+    print(f'Paliers generes avec la variante {args.variant}: {flags}')
 
     levels = []
     lvl = args.min
     while lvl <= args.max + 1e-9:
         name = f'water_lvl_{int(round(lvl)):02d}.xml'
         with open(os.path.join(out_dir, name), 'w', encoding='utf-8') as fh:
-            fh.write(build_file(lvl, args.cell, calming, waves))
+            fh.write(build_file(lvl, args.cell, calming, waves, flags))
         levels.append(int(round(lvl)))
         lvl += args.step
 

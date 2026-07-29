@@ -17,7 +17,8 @@ server_scripts {
 client_scripts {
     'client/main.lua',
     'client/water.lua',
-    'client/dam.lua'
+    'client/dam.lua',
+    'client/spectacle.lua'
 }
 
 -- Les water_lvl_XX.xml sont générés par tools/generate_water_levels.py.

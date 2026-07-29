@@ -39,6 +39,34 @@ Event d'ouverture de serveur ESX : sirènes, alerte, montée d'eau progressive,
   votre fichier audio de sirène dans `Config.Sirens.url`) sinon fallback sur
   un son natif en boucle.
 
+## Trouver la bonne configuration d'eau (IMPORTANT — à faire avant tout)
+
+Le premier test a montré une eau "en l'air", sans volume, visible seulement
+près des plages : ça vient des flags de quad (`NoStencil`, `Type`, alpha)
+que GTA utilise pour décider où l'eau peut réellement s'afficher au-dessus
+du terrain. Je ne peux pas connaître la bonne combinaison sans tester en
+jeu, donc `tools/generate_water_levels.py` génère maintenant 6 variantes de
+diagnostic (`stream/water_var_v1.xml` à `v6`), toutes à 30m de haut.
+
+**Faites ça en premier :**
+
+```
+/watervariant v1
+```
+
+Regardez le résultat (volume sous la surface ? eau en ville ou juste aux
+plages ?), puis testez `v2`, `v3`, etc. Notez laquelle donne une vraie nappe
+d'eau qui recouvre le terrain avec du volume dessous.
+
+Une fois la bonne variante identifiée, régénérez tous les paliers avec :
+
+```
+python3 tools/generate_water_levels.py water.xml --variant v3
+```
+
+(remplacez `v3` par celle qui a marché), puis recopiez la ligne `levels = {...}`
+affichée dans `Config.Water.levels`.
+
 ## La rupture du barrage — ce qui est possible, et ce qui ne l'est pas
 
 **Le barrage de Land Act ne peut pas être réellement détruit par script.**

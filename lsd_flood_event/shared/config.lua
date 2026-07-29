@@ -118,7 +118,97 @@ Config.Rupture = {
     }
 }
 
--- Commande de repérage pour développeur (client-side, lecture seule)
+-- ============================================================
+-- MISE EN SCÈNE — tout ce qui rend l'event spectaculaire.
+-- Chaque bloc est indépendant : coupez ce qui ne vous plaît pas.
+-- ============================================================
+Config.Spectacle = {
+
+    -- Le barrage alimente la ville : il cède, Los Santos s'éteint.
+    blackout = { enabled = true },
+
+    -- Ambiance visuelle par phase (noms de timecycle du jeu)
+    timecycle = {
+        enabled  = true,
+        alert    = 'Storm',        -- ciel qui se couvre
+        disaster = 'Dark_Storm',   -- apocalypse
+        recovery = 'morgue_dark'   -- lendemain glauque
+    },
+
+    -- Éclairs pendant la catastrophe
+    lightning = {
+        enabled  = true,
+        minDelay = 4000,
+        maxDelay = 15000
+    },
+
+    -- Les PNJ paniquent et fuient loin de la crue
+    panic = {
+        enabled    = true,
+        interval   = 3000,
+        radius     = 120.0,
+        maxPerTick = 8      -- limite pour ne pas plomber les FPS
+    },
+
+    -- Débris emportés par le courant, flottant à la surface
+    debris = {
+        enabled  = true,
+        interval = 4000,
+        perWave  = 2,
+        maxAlive = 25,
+        minDist  = 25.0,
+        maxDist  = 70.0,
+        maxHeightAboveWater = 40.0,
+        driftX   = 3.0,
+        driftY   = -2.0,
+        models   = {
+            'prop_barrel_02a', 'prop_woodpile_01a', 'prop_bin_08a',
+            'prop_rub_wooden_pallet', 'prop_dumpster_01a',
+            'prop_logpile_02', 'prop_cablespool_02', 'prop_water_barrel'
+        }
+    },
+
+    -- Hélicoptères de secours en patrouille avec projecteur
+    helicopters = {
+        enabled    = true,
+        interval   = 45000,
+        maxAlive   = 2,
+        model      = 'polmav',
+        pilotModel = 's_m_y_pilot_01',
+        spawnDist  = 200.0,
+        altitude   = 60.0
+    },
+
+    -- Alertes diffusées au fil de l'event
+    messages = {
+        alert = {
+            '~r~ALERTE~s~ — Le barrage de Land Act présente une brèche critique.',
+            '~y~Les services d\'urgence ordonnent l\'évacuation des quartiers bas.',
+            '~y~Rejoignez les points d\'évacuation signalés sur votre carte.'
+        },
+        rupture = {
+            '~r~LE BARRAGE A CÉDÉ.~s~ Une vague déferle vers Los Santos.',
+            '~r~Coupure générale du réseau électrique.',
+            '~y~Fuyez les zones basses IMMÉDIATEMENT.'
+        },
+        rising = {
+            '~r~Le niveau de l\'eau monte rapidement.',
+            '~y~Elysian Island et La Puerta sont submergées.',
+            '~y~Les secours héliportés survolent les zones sinistrées.',
+            '~r~Ne tentez pas de traverser les courants à pied.'
+        },
+        peak = {
+            '~y~Le niveau de l\'eau s\'est stabilisé.',
+            '~y~Restez en hauteur, la décrue n\'a pas commencé.'
+        },
+        receding = {
+            '~g~La décrue est amorcée.',
+            '~y~Les équipes de secours entament les recherches.'
+        }
+    }
+}
+
+-- Commandes de repérage pour développeur (client-side, lecture seule)
 Config.DevCommands = true
 
 -- Niveau d'eau (Z absolu) avant/pendant/après l'event.
