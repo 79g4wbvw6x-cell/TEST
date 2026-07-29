@@ -140,7 +140,9 @@ Config.Water = {
     -- exacte à recopier ici. Tant que cette table est vide, l'eau ne
     -- montera pas : c'est le rechargement de ces fichiers qui produit
     -- l'effet visuel.
-    levels = {}
+    levels = { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34,
+               36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66,
+               68, 70, 72, 74, 76, 78, 80 }
 }
 
 -- Zones inondées : utilisées pour les dégâts, les blips d'alerte et les effets
