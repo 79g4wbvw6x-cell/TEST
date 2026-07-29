@@ -67,6 +67,9 @@ Deux options, toutes deux à activer manuellement :
   dans la ressource. C'est la seule méthode qui donne un vrai rendu "béton
   arraché". Un modeleur 3D ou un asset payant est requis ici.
 
+👉 **Pour créer le prop de barrage cassé, suivez [MAPPING.md](MAPPING.md)** —
+guide pas à pas (CodeWalker, Blender/Sollumz, collision, LOD, streaming).
+
 **Comment savoir laquelle marche chez vous** : en jeu, visez le barrage et
 tapez `/damscan`. La console vous dira si vous visez une entité (→ hide/swap
 possible, le hash est affiché) ou de la géométrie de map pure (→ il faut un
