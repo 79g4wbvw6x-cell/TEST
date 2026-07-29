@@ -6,7 +6,6 @@ description 'Rupture du barrage de Land Act - inondation progressive de Los Sant
 version '1.0.0'
 
 shared_scripts {
-    '@es_extended/imports.lua',
     'shared/config.lua',
     'shared/vehicles.lua',
     'shared/weapons.lua'
