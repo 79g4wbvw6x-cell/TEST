@@ -1,8 +1,8 @@
 ESX = exports['es_extended']:getSharedObject()
 
 local currentPhase = 'idle'
-local waterProp = nil
-local waterPropCurrentZ = Config.WaterLevel.base
+-- niveau d eau courant, lu depuis GlobalState
+local currentWaterZ = Config.WaterLevel.base
 local hasXSound = GetResourceState('xsound') == 'started'
 local sirenSoundId = 'lsd_flood_siren'
 local blips = {}
@@ -20,57 +20,21 @@ end)
 
 RegisterNetEvent('lsd_flood:syncState', function(phase, waterLevel)
     currentPhase = phase
-    waterPropCurrentZ = waterLevel
+    currentWaterZ = waterLevel
 end)
 
 -- ============================================================
--- OBJET D'EAU (placeholder). Remplacez Config.WaterProp par votre
--- asset custom (ymap/prop shader eau) pour un rendu premium.
--- La montée réelle n'est PAS gérée par la heightmap eau native du
--- jeu (non modifiable en temps réel côté client), donc on simule
--- visuellement la crue avec un plan translucide qui suit
--- GlobalState.lsd_waterLevel, pendant que la logique de noyade est
--- calculée en pur script (comparaison de coordonnées Z).
+-- L'eau elle-même est gérée dans client/water.lua, via les water
+-- quads natifs du jeu (vraie eau: vagues, nage, bateaux, reflets).
+-- Ici on ne garde que le suivi du niveau courant, utilisé par la
+-- logique de survie ci-dessous.
 -- ============================================================
-
-Config.WaterProp = Config.WaterProp or { model = 'prop_worldwater_lod', sizeXY = 6000.0 }
-
-local function ensureWaterProp()
-    if waterProp and DoesEntityExist(waterProp) then return end
-    local hash = GetHashKey(Config.WaterProp.model)
-    RequestModel(hash)
-    local timeout = GetGameTimer() + 5000
-    while not HasModelLoaded(hash) and GetGameTimer() < timeout do
-        Wait(0)
-    end
-    if not HasModelLoaded(hash) then return end
-
-    waterProp = CreateObject(hash, Config.Dam.coords.x, Config.Dam.coords.y, Config.WaterLevel.base, false, false, false)
-    SetEntityAlpha(waterProp, 160, false)
-    SetEntityCollision(waterProp, false, false)
-    FreezeEntityPosition(waterProp, true)
-    SetModelAsNoLongerNeeded(hash)
-end
-
-local function destroyWaterProp()
-    if waterProp and DoesEntityExist(waterProp) then
-        DeleteEntity(waterProp)
-    end
-    waterProp = nil
-end
 
 CreateThread(function()
     while true do
         Wait(250)
-        if currentPhase == 'rising' or currentPhase == 'peak' or currentPhase == 'receding' then
-            ensureWaterProp()
-            if waterProp and DoesEntityExist(waterProp) then
-                local x, y, _ = table.unpack(GetEntityCoords(waterProp))
-                SetEntityCoords(waterProp, x, y, waterPropCurrentZ, false, false, false, false)
-            end
-        elseif currentPhase == 'idle' then
-            destroyWaterProp()
-        end
+        local lvl = GlobalState.lsd_waterLevel
+        if lvl then currentWaterZ = lvl end
     end
 end)
 
@@ -221,8 +185,13 @@ CreateThread(function()
             local ped = PlayerPedId()
             if not IsPedInAnyVehicle(ped, false) then
                 local coords = GetEntityCoords(ped)
-                local submerged = coords.z < waterPropCurrentZ and isInAnyFloodZone(coords)
-                TriggerServerEvent('lsd_flood:reportSubmersion', submerged and 1.0 or 0.0, coords.z)
+                -- L'eau est maintenant la vraie eau du moteur : on peut donc
+                -- mesurer la submersion nativement au lieu de comparer des Z.
+                local subm = GetEntitySubmergedLevel(ped) or 0.0
+                if subm <= 0.0 and coords.z < currentWaterZ and isInAnyFloodZone(coords) then
+                    subm = 1.0  -- filet de sécurité si la native ne répond pas
+                end
+                TriggerServerEvent('lsd_flood:reportSubmersion', subm, coords.z)
             else
                 TriggerServerEvent('lsd_flood:reportSubmersion', 0.0, 0.0)
             end
@@ -238,7 +207,7 @@ end)
 
 AddEventHandler('onResourceStop', function(resName)
     if GetCurrentResourceName() ~= resName then return end
-    destroyWaterProp()
+    -- (l eau est restauree par client/water.lua)
     clearBlips()
     stopSirens()
 end)

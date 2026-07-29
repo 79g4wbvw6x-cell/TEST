@@ -121,10 +121,19 @@ Config.Rupture = {
 -- Commande de repérage pour développeur (client-side, lecture seule)
 Config.DevCommands = true
 
--- Niveau d'eau (Z absolu) avant/pendant/après l'event
+-- Niveau d'eau (Z absolu) avant/pendant/après l'event.
+-- Réglez peak en jeu avec /watertest <niveau> avant de fixer la valeur :
+--   ~5   = les plages et quais sont noyés
+--   ~15  = Elysian Island, La Puerta, le port sous l'eau
+--   ~27  = Vespucci, Del Perro, une partie de Strawberry
+--   ~40  = centre-ville touché (très extrême)
 Config.WaterLevel = {
     base = 0.0,     -- niveau mer normal GTA
-    peak = 26.5      -- submerge les quartiers bas (Rancho, Strawberry, Elysian Island, La Puerta)
+    peak = 26.5
+}
+
+Config.Water = {
+    wavesIntensity = 3.0   -- agitation de la mer pendant la crue (1.0 = normal)
 }
 
 -- Zones inondées : utilisées pour les dégâts, les blips d'alerte et les effets
