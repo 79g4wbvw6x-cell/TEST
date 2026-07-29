@@ -55,12 +55,24 @@ Config.Rupture = {
         radius    = 60.0
     },
 
-    -- Masquage pur et simple d'une portion du barrage (sans asset de
-    -- remplacement) : crée un "trou" visuel par lequel l'eau jaillit.
+    -- Masquage d'une portion du barrage (sans asset de remplacement) :
+    -- crée un "trou" visuel par lequel l'eau jaillit.
+    --
+    -- Le barrage est composé de plusieurs morceaux distincts, relevés dans
+    -- ch3_08.ymap. Les noms ci-dessous sont les noms HD déduits des entités
+    -- LOD (règle vérifiée sur un cas réel : ch3_08_damculvert001_lod a pour
+    -- enfant HD ch3_08_damculvert001).
+    -- ⚠️ À CONFIRMER en jeu avec /damscan avant de mettre enabled = true.
     modelHide = {
         enabled = false,
-        model   = nil,     -- hash/nom du morceau à masquer (via /damscan)
-        radius  = 25.0
+        radius  = 40.0,
+        models  = {
+            'ch3_08_dam_plat',      -- plateforme      (1662.1, -25.8, 169.3)
+            'ch3_08_dam_corr',      -- passerelle      (1661.8,  -2.9, 168.5)
+            'ch3_08_dam_mp003',     -- mur             (1659.5, -23.5, 163.9)
+            'ch3_08_dam_mp2_01',    -- mur             (1660.9, -20.4, 157.2)
+            'ch3_08_dam_scaff'      -- échafaudage     (1656.3, -52.5, 156.7)
+        }
     },
 
     -- Particules du torrent jaillissant de la brèche.

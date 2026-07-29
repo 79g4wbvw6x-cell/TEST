@@ -54,10 +54,13 @@ local function applyDamDestruction()
         swapApplied = true
     end
 
+    -- Le barrage est fait de plusieurs morceaux : on les masque tous.
     local hide = Config.Rupture.modelHide
-    if hide.enabled and hide.model then
-        local m = type(hide.model) == 'string' and GetHashKey(hide.model) or hide.model
-        CreateModelHide(d.x, d.y, d.z, hide.radius, m, true)
+    if hide.enabled and hide.models then
+        for _, name in ipairs(hide.models) do
+            local m = type(name) == 'string' and GetHashKey(name) or name
+            CreateModelHide(d.x, d.y, d.z, hide.radius, m, true)
+        end
         hideApplied = true
     end
 end
@@ -75,8 +78,10 @@ local function revertDamDestruction()
 
     if hideApplied then
         local hide = Config.Rupture.modelHide
-        local m = type(hide.model) == 'string' and GetHashKey(hide.model) or hide.model
-        RemoveModelHide(d.x, d.y, d.z, hide.radius, m, false)
+        for _, name in ipairs(hide.models) do
+            local m = type(name) == 'string' and GetHashKey(name) or name
+            RemoveModelHide(d.x, d.y, d.z, hide.radius, m, false)
+        end
         hideApplied = false
     end
 end
