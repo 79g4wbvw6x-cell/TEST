@@ -15,7 +15,8 @@ server_scripts {
 }
 
 client_scripts {
-    'client/main.lua'
+    'client/main.lua',
+    'client/dam.lua'
 }
 
 lua54 'yes'

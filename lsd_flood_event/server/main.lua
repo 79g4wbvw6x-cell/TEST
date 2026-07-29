@@ -33,6 +33,16 @@ local function runFloodSequence()
     Wait(Config.Phases.alert * 1000)
     if not running then return end
 
+    -- Rupture: explosion, effondrement, départ de la vague.
+    -- L'eau ne monte pas encore, mais la vague voyage déjà vers la ville.
+    setPhase('rupture', Config.Phases.rupture)
+    -- Horodatage partagé: permet à un joueur qui se connecte pendant la crue
+    -- de retrouver la position exacte de la vague au lieu de la rater.
+    GlobalState.lsd_ruptureAt = os.time()
+    TriggerClientEvent('lsd_flood:damRupture', -1)
+    Wait(Config.Phases.rupture * 1000)
+    if not running then return end
+
     setPhase('rising', Config.Phases.rising)
     lerpWater(Config.WaterLevel.base, Config.WaterLevel.peak, Config.Phases.rising)
     if not running then return end
@@ -70,6 +80,7 @@ RegisterCommand(Config.StopCommand, function(source)
     running = false
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
+    GlobalState.lsd_ruptureAt = 0
     submersionState = {}
 end, false)
 

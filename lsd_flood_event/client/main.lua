@@ -151,6 +151,9 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(phase, duration)
         createZoneBlips()
         playSirens()
         SetWeatherTypeOverTime('THUNDER', 20.0)
+    elseif phase == 'rupture' then
+        stopSirens()
+        ESX.ShowNotification('~r~LE BARRAGE A CÉDÉ~s~ : une vague déferle vers Los Santos. Fuyez les zones basses !')
     elseif phase == 'rising' then
         stopSirens()
         ESX.ShowNotification('~r~RUPTURE DU BARRAGE~s~ : l\'eau monte. Rejoignez un point d\'évacuation en hauteur.')
@@ -176,6 +179,7 @@ CreateThread(function()
         if currentPhase ~= 'idle' then
             local label = ({
                 alert = 'ALERTE - Évacuation en cours',
+                rupture = 'LE BARRAGE A CÉDÉ - VAGUE EN APPROCHE',
                 rising = 'CRUE EN COURS - Niveau en hausse',
                 peak = 'NIVEAU MAXIMUM ATTEINT',
                 receding = 'DÉCRUE EN COURS'

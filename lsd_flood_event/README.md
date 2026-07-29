@@ -39,6 +39,64 @@ Event d'ouverture de serveur ESX : sirènes, alerte, montée d'eau progressive,
   votre fichier audio de sirène dans `Config.Sirens.url`) sinon fallback sur
   un son natif en boucle.
 
+## La rupture du barrage — ce qui est possible, et ce qui ne l'est pas
+
+**Le barrage de Land Act ne peut pas être réellement détruit par script.**
+C'est de la géométrie de map statique : aucune native ne permet de la casser,
+de la déformer ou d'y percer un trou en runtime. Toute ressource qui prétend
+le contraire fait en réalité l'une des trois choses ci-dessous.
+
+Ce script combine les trois pour obtenir l'illusion la plus convaincante
+possible :
+
+### 1. Explosions en cascade (`Config.Rupture.explosions`)
+5 charges déclenchées en séquence sur la crête, avec secousse de caméra et
+vibration manette **ressenties dans toute la ville**, atténuées avec la
+distance. C'est le moment "le barrage vient de céder". Fonctionne
+immédiatement, sans aucun asset.
+
+### 2. Effondrement visuel (`modelSwap` / `modelHide`) — **désactivé par défaut**
+Deux options, toutes deux à activer manuellement :
+
+- **`modelHide`** : masque un morceau du barrage avec `CreateModelHide`, ce
+  qui crée un trou visuel par lequel le torrent jaillit. Ne nécessite aucun
+  asset — mais ne fonctionne **que si le morceau visé est une entité**, pas
+  de la géométrie baked.
+- **`modelSwap`** : remplace le barrage intact par une version éventrée avec
+  `CreateModelSwap`. **Nécessite votre propre prop de barrage cassé** streamé
+  dans la ressource. C'est la seule méthode qui donne un vrai rendu "béton
+  arraché". Un modeleur 3D ou un asset payant est requis ici.
+
+**Comment savoir laquelle marche chez vous** : en jeu, visez le barrage et
+tapez `/damscan`. La console vous dira si vous visez une entité (→ hide/swap
+possible, le hash est affiché) ou de la géométrie de map pure (→ il faut un
+override de ymap/ydr streamé).
+
+### 3. Le torrent + la vague déferlante
+- **Torrent permanent** : des émetteurs de particules répartis sur la largeur
+  de la brèche (`Config.Dam.breach.width`), créés uniquement quand un joueur
+  est à portée et détruits dès qu'il s'éloigne → zéro coût FPS en ville.
+- **Vague déferlante** : un front d'eau qui voyage du barrage jusqu'à Rancho
+  en suivant `Config.Rupture.wave.path` (3 min par défaut). Les joueurs pris
+  dedans sont **ragdollés**, et les véhicules **projetés** par une force
+  physique. Sa position est calculée depuis l'horodatage serveur partagé,
+  donc tout le monde la voit au même endroit au même instant — y compris un
+  joueur qui se connecte en pleine crue.
+
+### Valider les ptfx ⚠️
+Les noms d'assets de particules dans `Config.Rupture.ptfx` sont des
+**candidats à vérifier en jeu** — je ne peux pas garantir de mémoire qu'un
+couple dict/effet existe dans votre build. Utilisez la commande fournie :
+
+```
+/ptfxtest core water_splash_ped_in 6.0
+```
+
+Elle joue l'effet à vos pieds pendant 10s et affiche OK ou Échec en console.
+Testez plusieurs candidats, gardez le plus impressionnant, et reportez-le
+dans `Config.Rupture.ptfx`. Quelques pistes à essayer : `water_splash_ped_in`,
+`water_splash_veh_in`, `ent_amb_waterfall`.
+
 ## Configuration
 
 Tout se règle dans `shared/config.lua` :
@@ -47,3 +105,13 @@ Tout se règle dans `shared/config.lua` :
 - `Config.FloodZones` : quartiers touchés (centre + rayon) pour les dégâts et blips.
 - `Config.EvacPoints` : points hauts sûrs affichés sur la carte.
 - `Config.Survival` : intervalle de vérification, dégâts, tolérance de submersion.
+- `Config.Dam.breach` : position/orientation/largeur de la brèche (réglez avec `/damscan`).
+- `Config.Rupture` : explosions, effondrement, particules, trajet et impact de la vague.
+
+## Commandes développeur
+
+Activables/désactivables via `Config.DevCommands`.
+
+- `/damscan` : affiche vos coordonnées, le point visé et le modèle sous le
+  viseur. Sert à régler la brèche et à identifier le modèle du barrage.
+- `/ptfxtest <dict> <effet> [echelle]` : teste un effet de particules.
