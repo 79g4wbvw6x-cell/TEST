@@ -3,8 +3,6 @@ ESX = exports['es_extended']:getSharedObject()
 local currentPhase = 'idle'
 -- niveau d eau courant, lu depuis GlobalState
 local currentWaterZ = Config.WaterLevel.base
-local hasXSound = GetResourceState('xsound') == 'started'
-local sirenSoundId = 'lsd_flood_siren'
 local blips = {}
 
 -- ============================================================
@@ -42,26 +40,17 @@ end)
 -- SIRÈNES / ALERTE
 -- ============================================================
 
+-- Sirène jouée via l'audio HTML du NUI: fiable pour tout le monde, sans
+-- dépendre d'une ressource tierce (xsound) ni d'un soundset natif dont on
+-- ne peut pas garantir l'existence sur tous les builds. Le navigateur NUI
+-- de la ressource est toujours actif (ui_page), donc ça marche même sans
+-- ouvrir le panel F6.
 local function playSirens()
-    if hasXSound then
-        exports.xsound:PlayUrlPos(sirenSoundId, Config.Sirens.url or 'https://your-cdn.example/siren_loop.ogg', 0.6, Config.Sirens.coordsSirens[1], true)
-        exports.xsound:setRange(sirenSoundId, Config.Sirens.range)
-    else
-        CreateThread(function()
-            while currentPhase == 'alert' do
-                for _, coords in ipairs(Config.Sirens.coordsSirens) do
-                    PlaySoundFromCoord(-1, 'Bed', coords.x, coords.y, coords.z, 'DLC_HEIST_HACKING_SNAKE_SOUNDS', false, Config.Sirens.range, false)
-                end
-                Wait(1800)
-            end
-        end)
-    end
+    SendNUIMessage({ type = 'sirenPlay', volume = Config.Sirens.volume or 0.8 })
 end
 
 local function stopSirens()
-    if hasXSound then
-        exports.xsound:Destroy(sirenSoundId)
-    end
+    SendNUIMessage({ type = 'sirenStop' })
 end
 
 -- ============================================================

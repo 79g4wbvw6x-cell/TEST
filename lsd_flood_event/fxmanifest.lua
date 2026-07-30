@@ -30,7 +30,8 @@ client_scripts {
 ui_page 'html/ui.html'
 
 files {
-    'html/ui.html'
+    'html/ui.html',
+    'html/sounds/tsunami_siren.mp3'
 }
 
 -- Les water_lvl_XX.xml sont générés par tools/generate_water_levels.py.

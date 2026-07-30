@@ -31,24 +31,21 @@ Config.Phases = {
 -- par client/water.lua, indépendamment).
 -- ============================================================
 Config.Tsunami = {
-    -- ⚠️ IMPORTANT: ces coordonnées doivent rester DANS la carte chargée
-    -- (grille utilisée par tools/generate_water_levels.py: environ
-    -- x -4200..4700, y -4200..8200). Au-delà, rien n'est streamé et le
-    -- tsunami ne peut tout simplement pas s'afficher — c'était le bug de
-    -- la version précédente (origine posée à x=-5800, hors carte).
-    origin = vector3(-3900.0, -3600.0, 0.0),   -- large ouvert, au large de Los Santos
+    -- Origine juste au large de Vespucci Beach — assez proche pour être
+    -- réellement dans la distance de rendu du jeu (les marqueurs/particules
+    -- à plusieurs km ne s'affichent pas de façon fiable, c'était le
+    -- problème de la version précédente). "Vient de la plage": le joueur
+    -- posté sur le sable la voit dès le début de l'alerte.
+    origin = vector3(-2050.0, -2300.0, 0.0),   -- ~700m au large de Vespucci Beach
 
-    -- Premier point de la côte touché (Del Perro / Vespucci).
-    landfall = vector3(-1650.0, -900.0, 0.0),
+    -- Landfall: directement sur le sable de Vespucci Beach.
+    landfall = vector3(-1400.0, -2000.0, 0.0),
 
-    -- Trajet complet: du large jusqu'aux quartiers bas, en passant par la
-    -- côte. Chaque segment peut avoir une vitesse différente (plus lent au
-    -- large pour qu'on le voie venir, plus rapide une fois à terre).
+    -- Trajet complet: de la plage jusqu'aux quartiers bas.
     path = {
-        vector3(-3900.0, -3600.0, 0.0),  -- origine, au large
-        vector3(-3000.0, -2700.0, 0.0),
-        vector3(-2300.0, -1800.0, 0.0),
-        vector3(-1650.0,  -900.0, 0.0),  -- landfall: Del Perro/Vespucci
+        vector3(-2050.0, -2300.0, 0.0),  -- origine, juste au large
+        vector3(-1700.0, -2130.0, 0.0),
+        vector3(-1400.0, -2000.0, 0.0),  -- landfall: Vespucci Beach
         vector3(-1097.0, -1520.0, 0.0),  -- Vespucci
         vector3(  200.0,  -900.0, 0.0),  -- Legion Square
         vector3(  280.0, -2780.0, 0.0),  -- Elysian Island
@@ -63,7 +60,10 @@ Config.Tsunami = {
     -- travelTime). Pendant cette portion, un mur imposant + panache et un
     -- grondement sont joués — pas d'impact physique, le joueur ne fait que
     -- la voir venir grossir.
-    landfallProgress = 0.4,
+    -- Recalculé pour le nouveau trajet plus court (origine proche de la
+    -- plage): le segment océan ne représente plus que ~13% de la distance
+    -- totale jusqu'à Rancho.
+    landfallProgress = 0.13,
 
     width      = 600.0,   -- largeur du front (mur visuel + zone d'impact)
     wallHeight = 140.0,   -- hauteur du mur au moment de l'impact — vraiment énorme
@@ -279,15 +279,8 @@ Config.Survival = {
 }
 
 -- Audio / immersion
+-- Sirène jouée via l'audio HTML du panel NUI (html/sounds/tsunami_siren.mp3),
+-- fiable pour tous les joueurs sans dépendance externe.
 Config.Sirens = {
-    soundset = 'DLC_HEIST_HACKING_SNAKE_SOUNDS',
-    -- fallback: sirène via native PLAY_SOUND_FROM_COORD, réutilise un son d'alarme existant du jeu
-    coordsSirens = {
-        vector3(-1580.0, -450.0, 32.0),  -- Del Perro, première zone côtière touchée
-        vector3(390.0, -1932.0, 22.0),
-        vector3(280.0, -2780.0, 5.0),
-        vector3(-230.0, -2900.0, 5.0),
-        vector3(200.0, -900.0, 28.0)
-    },
-    range = 600.0
+    volume = 0.8  -- 0.0 à 1.0
 }

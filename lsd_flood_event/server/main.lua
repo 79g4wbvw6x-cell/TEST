@@ -49,6 +49,21 @@ local function lerpWater(fromZ, toZ, durationSec)
     GlobalState.lsd_waterLevel = toZ
 end
 
+-- Montée en deux temps au lieu d'une rampe linéaire: un SURGE rapide au
+-- moment de l'impact (l'eau du système water.xml — confirmée fonctionner
+-- de façon fiable, contrairement aux marqueurs 3D à longue distance — bondit
+-- réellement d'un coup), puis une montée plus lente jusqu'au pic. C'est ce
+-- qui donne la sensation d'un vrai tsunami qui déferle, pas d'une marée qui
+-- monte doucement.
+local function risingSequence(durationSec)
+    local surgeTime = math.max(math.floor(durationSec * 0.08), 5)
+    local surgeLevel = Config.WaterLevel.base +
+        (Config.WaterLevel.peak - Config.WaterLevel.base) * 0.4
+    lerpWater(Config.WaterLevel.base, surgeLevel, surgeTime)
+    if not running then return end
+    lerpWater(surgeLevel, Config.WaterLevel.peak, math.max(durationSec - surgeTime, 1))
+end
+
 local function runFloodSequence()
     running = true
     pendingReceding = false
@@ -69,7 +84,7 @@ local function runFloodSequence()
     if not running then return end
 
     setPhase('rising', durations.rising)
-    lerpWater(Config.WaterLevel.base, Config.WaterLevel.peak, durations.rising)
+    risingSequence(durations.rising)
     if not running then return end
 
     -- Pic: NIVEAU INDÉFINI. On n'avance plus automatiquement vers la
@@ -124,6 +139,7 @@ local function forcePhase(phase)
         notifyStaff('Niveau d\'eau stabilisé. La décrue attend votre décision (panel F6 > Événement > Décrue).')
     elseif phase == 'rising' then
         setPhase('rising', durations.rising)
+        CreateThread(function() risingSequence(durations.rising) end)
     elseif phase == 'rupture' then
         GlobalState.lsd_ruptureAt = os.time()
         setPhase('rupture', durations.rupture)
