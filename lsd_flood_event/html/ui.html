@@ -60,7 +60,9 @@
 </style>
 </head>
 <body>
-<audio id="sirenAudio" src="sounds/tsunami_siren.mp3" loop preload="auto"></audio>
+<audio id="sirenAudio" loop preload="auto" onerror="console.log('[lsd_flood] ERREUR chargement audio: ' + (this.error ? this.error.code : 'inconnue'))">
+  <source src="sounds/tsunami_siren.mp3" type="audio/mpeg">
+</audio>
 <div id="ctxmenu"></div>
 <div id="app">
   <header>
@@ -264,11 +266,18 @@ window.addEventListener('message', (e) => {
     document.getElementById('stPhase').innerText = msg.phase || 'idle';
     document.getElementById('stLevel').innerText = (msg.level || 0).toFixed(1);
   } else if (msg.type === 'sirenPlay') {
+    console.log('[lsd_flood] sirenPlay reçu');
     const a = document.getElementById('sirenAudio');
+    console.log('[lsd_flood] audio readyState=' + a.readyState + ' src=' + a.currentSrc);
     a.volume = (msg.volume !== undefined) ? msg.volume : 0.8;
     a.currentTime = 0;
-    a.play().catch(() => {});
+    const p = a.play();
+    if (p && p.then) {
+      p.then(() => console.log('[lsd_flood] audio.play() OK'))
+       .catch((err) => console.log('[lsd_flood] audio.play() REJETÉ: ' + err));
+    }
   } else if (msg.type === 'sirenStop') {
+    console.log('[lsd_flood] sirenStop reçu');
     const a = document.getElementById('sirenAudio');
     a.pause();
     a.currentTime = 0;

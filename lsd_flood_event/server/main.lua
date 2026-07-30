@@ -27,6 +27,45 @@ local durations = {
     receding = Config.Phases.receding
 }
 
+GlobalState.lsd_tsunamiProgress = 0.0
+local tsunamiRunning = false
+
+-- Fait avancer la progression du tsunami (0..1) via GetGameTimer(), un
+-- timer purement serveur — jamais os.time(), qui reflète l'horloge système
+-- de chaque machine et n'a AUCUNE raison d'être synchronisée entre le
+-- serveur et le PC du joueur. C'était le vrai bug du mur invisible: le
+-- client calculait sa propre progression avec son horloge locale, qui
+-- pouvait diverger de plusieurs minutes/heures de celle du serveur — la
+-- progression tombait hors de l'intervalle valide et le tsunami ne se
+-- dessinait jamais. Le niveau d'eau, lui, marchait déjà parce qu'il est
+-- piloté par GlobalState (mis à jour par le serveur), pas par une horloge
+-- locale — donc on applique exactement le même principe ici.
+local function runTsunamiProgress()
+    if tsunamiRunning then return end
+    tsunamiRunning = true
+
+    local travelMs = math.max(Config.Tsunami.travelTime, 1) * 1000
+    local start = GetGameTimer()
+    GlobalState.lsd_tsunamiProgress = 0.0
+
+    while tsunamiRunning do
+        local t = (GetGameTimer() - start) / travelMs
+        if t >= 1.0 then
+            GlobalState.lsd_tsunamiProgress = 1.0
+            break
+        end
+        GlobalState.lsd_tsunamiProgress = t
+        Wait(200)
+    end
+
+    tsunamiRunning = false
+end
+
+local function stopTsunamiProgress()
+    tsunamiRunning = false
+    GlobalState.lsd_tsunamiProgress = 0.0
+end
+
 GlobalState.lsd_floodPhase = 'idle'
 GlobalState.lsd_waterLevel = Config.WaterLevel.base
 GlobalState.lsd_phaseEndsAt = 0
@@ -76,9 +115,7 @@ local function runFloodSequence()
     -- Rupture: le tsunami touche la côte, départ de la vague vers la ville.
     -- L'eau ne monte pas encore, mais la vague voyage déjà.
     setPhase('rupture', durations.rupture)
-    -- Horodatage partagé: permet à un joueur qui se connecte pendant la crue
-    -- de retrouver la position exacte de la vague au lieu de la rater.
-    GlobalState.lsd_ruptureAt = os.time()
+    CreateThread(runTsunamiProgress)
     TriggerClientEvent('lsd_flood:damRupture', -1)
     Wait(durations.rupture * 1000)
     if not running then return end
@@ -141,8 +178,8 @@ local function forcePhase(phase)
         setPhase('rising', durations.rising)
         CreateThread(function() risingSequence(durations.rising) end)
     elseif phase == 'rupture' then
-        GlobalState.lsd_ruptureAt = os.time()
         setPhase('rupture', durations.rupture)
+        CreateThread(runTsunamiProgress)
         TriggerClientEvent('lsd_flood:damRupture', -1)
     elseif phase == 'alert' then
         setPhase('alert', durations.alert)
@@ -171,7 +208,7 @@ exports('StopFlood', function()
     pendingReceding = false
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
-    GlobalState.lsd_ruptureAt = 0
+    stopTsunamiProgress()
     submersionState = {}
 end)
 exports('BeginReceding', function() pendingReceding = true end)
@@ -197,7 +234,7 @@ RegisterCommand(Config.StopCommand, function(source)
     pendingReceding = false
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
-    GlobalState.lsd_ruptureAt = 0
+    stopTsunamiProgress()
     submersionState = {}
 end, false)
 

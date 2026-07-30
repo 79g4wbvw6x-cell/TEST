@@ -2,9 +2,9 @@
 -- TSUNAMI — vague visible au loin qui approche, touche la côte,
 -- puis recouvre la ville. Pas de modèle à casser, pas de collision à
 -- éditer : seulement un front qui voyage le long de Config.Tsunami.path,
--- synchronisé pour tous les joueurs via l'horodatage serveur partagé
--- (GlobalState.lsd_ruptureAt), plus un mur visuel et un grondement qui
--- s'intensifie à mesure qu'elle approche.
+-- synchronisé pour tous les joueurs via GlobalState.lsd_tsunamiProgress
+-- (calculé côté serveur, jamais via l'horloge système du client), plus un
+-- mur visuel et un grondement qui s'intensifie à mesure qu'elle approche.
 -- ============================================================
 
 local T = Config.Tsunami
@@ -42,13 +42,16 @@ local function positionAt(t)
     return path[#path]
 end
 
+-- Lit directement la progression calculée par le serveur (GetGameTimer(),
+-- jamais os.time() qui reflète l'horloge système de chaque machine et
+-- n'a aucune raison d'être synchronisée entre serveur et client — c'était
+-- le vrai bug qui empêchait le mur de s'afficher).
 local function progress()
-    local startedAt = GlobalState.lsd_ruptureAt
-    if not startedAt or startedAt == 0 then return nil end
-    local elapsed = os.time() - startedAt
-    local t = elapsed / T.travelTime
-    if t < 0.0 or t > 1.0 then return nil end
-    return t
+    local phase = GlobalState.lsd_floodPhase
+    if phase ~= 'rupture' and phase ~= 'rising' and phase ~= 'peak' then return nil end
+    local t = GlobalState.lsd_tsunamiProgress
+    if not t then return nil end
+    return math.max(0.0, math.min(1.0, t))
 end
 
 -- ------------------------------------------------------------

@@ -45,12 +45,29 @@ end)
 -- ne peut pas garantir l'existence sur tous les builds. Le navigateur NUI
 -- de la ressource est toujours actif (ui_page), donc ça marche même sans
 -- ouvrir le panel F6.
+local sirenNativeLoop = false
+
 local function playSirens()
+    print('[lsd_flood] playSirens(): envoi sirenPlay au NUI')
     SendNUIMessage({ type = 'sirenPlay', volume = Config.Sirens.volume or 0.8 })
+
+    -- Filet de sécurité: en plus du mp3 (qui peut être bloqué par une
+    -- politique de lecture automatique du navigateur intégré), un bip
+    -- d'alerte natif garantit qu'il se passe AU MOINS quelque chose à
+    -- l'oreille pendant qu'on diagnostique le mp3 via la console F8.
+    sirenNativeLoop = true
+    CreateThread(function()
+        while sirenNativeLoop do
+            PlaySoundFrontend(-1, 'Beep_Red', 'DLC_HEIST_HACKING_SNAKE_SOUNDS', true)
+            Wait(1200)
+        end
+    end)
 end
 
 local function stopSirens()
+    print('[lsd_flood] stopSirens(): envoi sirenStop au NUI')
     SendNUIMessage({ type = 'sirenStop' })
+    sirenNativeLoop = false
 end
 
 -- ============================================================
