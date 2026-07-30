@@ -32,12 +32,30 @@ secondes (4 min par défaut). Sa position est calculée depuis un horodatage
 serveur partagé, donc tous les joueurs le voient au même endroit au même
 instant — y compris un joueur qui se connecte en cours d'event.
 
-Pendant la première partie du trajet (`landfallProgress`, 35% par défaut),
-la vague est **visible mais sans impact** : un mur (marker natif, pas
-d'asset custom nécessaire) et un grondement qui s'intensifie avec la
-proximité. Une fois `landfallProgress` atteint, elle produit de l'écume et
-un vrai impact physique (ragdoll des joueurs, poussée des véhicules) pour
-quiconque se trouve dans sa largeur.
+**Bug corrigé** : la première version plaçait l'origine à x=-5800, en
+dehors de la zone réellement chargée par le jeu (~x -4200..4700), donc rien
+ne s'affichait — le tsunami existait en théorie mais était rendu dans le
+vide. Les coordonnées sont maintenant dans la carte.
+
+Le mur est composé de plusieurs marqueurs empilés (corps + crête d'écume +
+deux vaguelettes secondaires derrière) dont la hauteur grandit de façon non
+linéaire à mesure que le tsunami approche — petit à l'horizon, jusqu'à
+`wallHeight` (140m par défaut) au moment de l'impact — plus un panache de
+particules continu pendant toute l'approche, pas seulement à l'impact.
+Un grondement s'intensifie avec la proximité.
+
+Pendant la première partie du trajet (`landfallProgress`, 40% par défaut),
+la vague est **visible mais sans impact physique**. Une fois ce seuil
+atteint, elle produit un vrai impact (ragdoll des joueurs, poussée des
+véhicules) pour quiconque se trouve dans sa largeur.
+
+### Le pic et la décrue — décision du staff
+Après la montée, l'eau se stabilise **indéfiniment**. La séquence
+automatique ne fait plus avancer vers la décrue toute seule : c'est au
+staff de la déclencher, via le panel F6 (Événement > Forcer une phase >
+Décrue). Les joueurs normaux ne reçoivent aucune information sur ce
+statut — seul le staff (permission ACE) est notifié quand le niveau se
+stabilise et qu'une décision est attendue.
 
 ### La montée d'eau
 Indépendante du tsunami : `client/water.lua` recharge des fichiers

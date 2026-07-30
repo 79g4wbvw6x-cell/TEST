@@ -305,11 +305,14 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(newPhase)
         broadcast(S.messages.rising, 25000)
 
     elseif newPhase == 'peak' then
-        broadcast(S.messages.peak, 20000)
+        -- Pas de diffusion publique: le statut "en attente de décrue" est
+        -- une info staff (notifyStaff côté serveur), pas quelque chose que
+        -- les joueurs normaux doivent voir en meta.
 
     elseif newPhase == 'receding' then
         applyTimecycle(S.timecycle.recovery, 0.7)
-        broadcast(S.messages.receding, 20000)
+        -- Idem: les joueurs voient l'eau descendre, ils n'ont pas besoin
+        -- d'un ticker narratif là-dessus.
 
     elseif newPhase == 'idle' then
         applyTimecycle(nil)

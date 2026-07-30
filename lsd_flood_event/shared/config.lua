@@ -31,8 +31,12 @@ Config.Phases = {
 -- par client/water.lua, indépendamment).
 -- ============================================================
 Config.Tsunami = {
-    -- Point de départ, loin en mer (visible à l'horizon depuis la côte).
-    origin = vector3(-5800.0, -4200.0, 0.0),
+    -- ⚠️ IMPORTANT: ces coordonnées doivent rester DANS la carte chargée
+    -- (grille utilisée par tools/generate_water_levels.py: environ
+    -- x -4200..4700, y -4200..8200). Au-delà, rien n'est streamé et le
+    -- tsunami ne peut tout simplement pas s'afficher — c'était le bug de
+    -- la version précédente (origine posée à x=-5800, hors carte).
+    origin = vector3(-3900.0, -3600.0, 0.0),   -- large ouvert, au large de Los Santos
 
     -- Premier point de la côte touché (Del Perro / Vespucci).
     landfall = vector3(-1650.0, -900.0, 0.0),
@@ -41,9 +45,9 @@ Config.Tsunami = {
     -- côte. Chaque segment peut avoir une vitesse différente (plus lent au
     -- large pour qu'on le voie venir, plus rapide une fois à terre).
     path = {
-        vector3(-5800.0, -4200.0, 0.0),  -- origine, au large
-        vector3(-3800.0, -3000.0, 0.0),
-        vector3(-2600.0, -1900.0, 0.0),
+        vector3(-3900.0, -3600.0, 0.0),  -- origine, au large
+        vector3(-3000.0, -2700.0, 0.0),
+        vector3(-2300.0, -1800.0, 0.0),
         vector3(-1650.0,  -900.0, 0.0),  -- landfall: Del Perro/Vespucci
         vector3(-1097.0, -1520.0, 0.0),  -- Vespucci
         vector3(  200.0,  -900.0, 0.0),  -- Legion Square
@@ -56,21 +60,27 @@ Config.Tsunami = {
     travelTime = 240,
 
     -- Portion du trajet visible "au loin" avant l'impact (fraction 0-1 du
-    -- travelTime). Pendant cette portion, seul un mur visuel distant et un
+    -- travelTime). Pendant cette portion, un mur imposant + panache et un
     -- grondement sont joués — pas d'impact physique, le joueur ne fait que
-    -- la voir venir.
-    landfallProgress = 0.35,
+    -- la voir venir grossir.
+    landfallProgress = 0.4,
 
-    width      = 400.0,  -- largeur du front de vague (mur visuel + zone d'impact)
-    wallHeight = 45.0,   -- hauteur du mur d'eau visuel (marker)
-    ptfxScale  = 12.0,
+    width      = 600.0,   -- largeur du front (mur visuel + zone d'impact)
+    wallHeight = 140.0,   -- hauteur du mur au moment de l'impact — vraiment énorme
+    ptfxScale  = 18.0,
+
+    -- Distance à partir de laquelle le mur/panache commencent à être
+    -- rendus. Volontairement large: c'est ce qui donne l'effet "on le voit
+    -- venir de loin". Les marqueurs/particules sont coûteux à faible
+    -- distance mais quasi gratuits au-delà de quelques centaines de mètres.
+    renderDistance = 3500.0,
 
     -- Effets ressentis par le joueur au passage du front (après landfall
     -- uniquement — pendant l'approche au loin, aucun impact)
     impact = {
         ragdollPlayers  = true,
         ragdollDuration = 3000,
-        vehicleForce    = 14.0,
+        vehicleForce    = 16.0,
         camShake        = 'LARGE_EXPLOSION_SHAKE'
     },
 

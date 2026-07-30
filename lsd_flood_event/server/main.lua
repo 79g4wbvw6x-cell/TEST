@@ -1,7 +1,21 @@
 ESX = exports['es_extended']:getSharedObject()
 
 local running = false
+local pendingReceding = false  -- ne redevient true que par décision du staff
 local submersionState = {} -- [source] = { since = os.time() or false }
+
+-- Notifie uniquement les joueurs ayant la permission admin (jamais les
+-- joueurs normaux) — utilisé pour tenir le staff informé du statut de
+-- l'event (ex: "niveau stable, en attente de votre décision pour la
+-- décrue") sans le révéler aux joueurs qui vivent l'event sans meta-info.
+local function notifyStaff(message)
+    for _, idStr in ipairs(GetPlayers()) do
+        local src = tonumber(idStr)
+        if src and IsPlayerAceAllowed(src, Config.AdminAce) then
+            TriggerClientEvent('ESX:Notify', src, { message = message })
+        end
+    end
+end
 
 -- Copie modifiable des durées, éditable en direct depuis le panel admin
 -- sans toucher au fichier de config.
@@ -37,14 +51,15 @@ end
 
 local function runFloodSequence()
     running = true
+    pendingReceding = false
 
     setPhase('alert', durations.alert)
     TriggerClientEvent('lsd_flood:alert', -1)
     Wait(durations.alert * 1000)
     if not running then return end
 
-    -- Rupture: explosion, effondrement, départ de la vague.
-    -- L'eau ne monte pas encore, mais la vague voyage déjà vers la ville.
+    -- Rupture: le tsunami touche la côte, départ de la vague vers la ville.
+    -- L'eau ne monte pas encore, mais la vague voyage déjà.
     setPhase('rupture', durations.rupture)
     -- Horodatage partagé: permet à un joueur qui se connecte pendant la crue
     -- de retrouver la position exacte de la vague au lieu de la rater.
@@ -57,8 +72,15 @@ local function runFloodSequence()
     lerpWater(Config.WaterLevel.base, Config.WaterLevel.peak, durations.rising)
     if not running then return end
 
-    setPhase('peak', durations.peak)
-    Wait(durations.peak * 1000)
+    -- Pic: NIVEAU INDÉFINI. On n'avance plus automatiquement vers la
+    -- décrue — c'est désormais une décision du staff (panel F6 > Forcer
+    -- une phase > Décrue, ou export BeginReceding). Les joueurs normaux
+    -- ne voient aucune info sur ce statut; seul le staff est notifié.
+    setPhase('peak', 0)
+    notifyStaff('Niveau d\'eau stabilisé. La décrue attend votre décision (panel F6 > Événement > Décrue).')
+    while running and not pendingReceding do
+        Wait(500)
+    end
     if not running then return end
 
     setPhase('receding', durations.receding)
@@ -77,17 +99,31 @@ end
 -- ============================================================
 
 local function forcePhase(phase)
+    if phase == 'receding' then
+        -- Si une séquence auto est en cours (bloquée au pic en attente du
+        -- staff), on la débloque proprement au lieu de créer un second
+        -- déroulement en parallèle.
+        if running then
+            pendingReceding = true
+            return
+        end
+        running = true
+        setPhase('receding', durations.receding)
+        return
+    end
+
     running = (phase ~= 'idle')
+    pendingReceding = false
+
     if phase == 'idle' then
         setPhase('idle', 0)
         GlobalState.lsd_waterLevel = Config.WaterLevel.base
     elseif phase == 'peak' then
-        setPhase('peak', durations.peak)
+        setPhase('peak', 0)
         GlobalState.lsd_waterLevel = Config.WaterLevel.peak
+        notifyStaff('Niveau d\'eau stabilisé. La décrue attend votre décision (panel F6 > Événement > Décrue).')
     elseif phase == 'rising' then
         setPhase('rising', durations.rising)
-    elseif phase == 'receding' then
-        setPhase('receding', durations.receding)
     elseif phase == 'rupture' then
         GlobalState.lsd_ruptureAt = os.time()
         setPhase('rupture', durations.rupture)
@@ -116,11 +152,13 @@ exports('SetDurations', setDurations)
 exports('StartFlood', function() if not running then CreateThread(runFloodSequence) end end)
 exports('StopFlood', function()
     running = false
+    pendingReceding = false
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
     GlobalState.lsd_ruptureAt = 0
     submersionState = {}
 end)
+exports('BeginReceding', function() pendingReceding = true end)
 
 RegisterCommand(Config.AdminCommand, function(source)
     if source ~= 0 and not IsPlayerAceAllowed(source, Config.AdminAce) then
@@ -140,6 +178,7 @@ RegisterCommand(Config.StopCommand, function(source)
         return
     end
     running = false
+    pendingReceding = false
     setPhase('idle', 0)
     GlobalState.lsd_waterLevel = Config.WaterLevel.base
     GlobalState.lsd_ruptureAt = 0

@@ -122,9 +122,9 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(phase, duration)
         stopSirens()
         ESX.ShowNotification('~r~LE TSUNAMI FRAPPE~s~ : l\'eau monte. Rejoignez un point d\'évacuation en hauteur.')
     elseif phase == 'peak' then
-        ESX.ShowNotification('Le niveau de l\'eau s\'est stabilisé. Restez en hauteur.')
+        -- Pas de notification publique: la décision de la décrue appartient
+        -- au staff, les joueurs n'ont pas besoin de le savoir à l'avance.
     elseif phase == 'receding' then
-        ESX.ShowNotification('La décrue commence. Les secours interviennent dans les quartiers touchés.')
         SetWeatherTypeOverTime('CLEARING', 60.0)
     elseif phase == 'idle' then
         ESX.ShowNotification('La situation est revenue à la normale.')

@@ -52,26 +52,61 @@ local function progress()
 end
 
 -- ------------------------------------------------------------
--- Mur visuel: un marker géant à la position du front, visible de loin.
--- Pas d'asset custom nécessaire — DrawMarker est natif et fiable à
--- n'importe quelle distance de rendu.
+-- Mur visuel: plusieurs marqueurs empilés/décalés pour donner du volume
+-- et une silhouette de vague déferlante, pas juste un bloc plat. Pas
+-- d'asset custom nécessaire — DrawMarker est natif, aucune dépendance.
+--
+-- La hauteur grandit progressivement à mesure que le tsunami approche:
+-- petit à l'horizon, monstrueux au moment de l'impact.
 -- ------------------------------------------------------------
 
 local function drawWall(pos, t)
     -- Direction du trajet à cet instant, pour orienter le mur perpendiculaire
-    local ahead = positionAt(math.min(t + 0.01, 1.0))
+    local ahead = positionAt(math.min(t + 0.02, 1.0))
     local dir = ahead - pos
     local len = #dir
     local heading = len > 0.0 and math.deg(math.atan(dir.x, dir.y)) or 0.0
 
-    local height = T.wallHeight * (0.5 + 0.5 * math.min(t / T.landfallProgress, 1.0))
+    -- Croissance non-linéaire: reste impressionnant même loin, explose au
+    -- moment du landfall.
+    local growth = math.min(t / T.landfallProgress, 1.0)
+    local height = 15.0 + T.wallHeight * (growth * growth)
+    local rad = math.rad(heading)
+    local perp = vector3(math.cos(rad), -math.sin(rad), 0.0)
+
+    -- Corps principal du mur
     DrawMarker(
         1, pos.x, pos.y, pos.z + height * 0.5, 0,0,0,
         0.0, 0.0, heading,
-        T.width, 25.0, height,
-        20, 70, 130, 190,
+        T.width, 30.0, height,
+        15, 60, 120, 210,
         false, false, 2, false, nil, nil, false
     )
+
+    -- Crête blanche/écume au sommet, légèrement en avant (donne le sens
+    -- de déferlement)
+    local crestPos = pos + (dir / math.max(len, 1.0)) * 20.0
+    DrawMarker(
+        1, crestPos.x, crestPos.y, crestPos.z + height * 0.92, 0,0,0,
+        0.0, 0.0, heading,
+        T.width * 0.98, 18.0, height * 0.18,
+        230, 240, 250, 220,
+        false, false, 2, false, nil, nil, false
+    )
+
+    -- Deux vaguelettes secondaires derrière le front principal: renforce
+    -- l'impression de masse d'eau qui arrive, pas un mur plat isolé
+    for i = 1, 2 do
+        local behind = pos - (dir / math.max(len, 1.0)) * (60.0 * i)
+        local h2 = height * (1.0 - 0.22 * i)
+        DrawMarker(
+            1, behind.x, behind.y, behind.z + h2 * 0.5, 0,0,0,
+            0.0, 0.0, heading,
+            T.width * (1.0 - 0.08 * i), 25.0, h2,
+            20, 70, 130, math.floor(190 - 40 * i),
+            false, false, 2, false, nil, nil, false
+        )
+    end
 end
 
 -- ------------------------------------------------------------
@@ -86,16 +121,16 @@ local function loadPtfx(dict)
     return HasNamedPtfxAssetLoaded(dict)
 end
 
-local function spawnFoam(pos)
+local function spawnFoam(pos, scale)
     if not loadPtfx('core') then return end
-    for i = -2, 2 do
-        local offset = vector3(i * (T.width / 5.0), 0.0, 0.0)
+    for i = -3, 3 do
+        local offset = vector3(i * (T.width / 7.0), 0.0, 0.0)
         local p = pos + offset
         UseParticleFxAssetNextCall('core')
         StartParticleFxNonLoopedAtCoord(
             'water_splash_ped_in',
             p.x, p.y, p.z, 0.0, 0.0, 0.0,
-            T.ptfxScale, false, false, false
+            scale or T.ptfxScale, false, false, false
         )
     end
 end
@@ -153,9 +188,12 @@ end
 -- Boucle principale
 -- ------------------------------------------------------------
 
+local lastFoamTime = 0
+
 local function run()
     if active then return end
     active = true
+    lastFoamTime = 0
 
     while active do
         local t = progress()
@@ -167,14 +205,24 @@ local function run()
 
         updateRumble(dist)
 
-        if dist <= 4000.0 then
+        if dist <= T.renderDistance then
             drawWall(pos, t)
+
+            -- Panache d'écume continu pendant TOUTE l'approche (pas
+            -- seulement à l'impact) — c'est ce qui donne l'impression
+            -- qu'on voit vraiment une masse d'eau vivante venir de loin,
+            -- pas juste un bloc statique.
+            local now = GetGameTimer()
+            if now - lastFoamTime > 800 then
+                local scale = t < T.landfallProgress and (T.ptfxScale * 0.5) or T.ptfxScale
+                spawnFoam(pos, scale)
+                lastFoamTime = now
+            end
         end
 
         if t >= T.landfallProgress then
             -- La vague a touché terre: elle a maintenant un effet physique
             if dist <= T.width * 1.5 then
-                spawnFoam(pos)
                 applyImpact(pos)
             end
             Wait(100)
