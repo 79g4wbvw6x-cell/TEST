@@ -44,7 +44,7 @@ end)
 
 local function playSirens()
     if hasXSound then
-        exports.xsound:PlayUrlPos(sirenSoundId, Config.Sirens.url or 'https://your-cdn.example/siren_loop.ogg', 0.6, Config.Dam.coords, true)
+        exports.xsound:PlayUrlPos(sirenSoundId, Config.Sirens.url or 'https://your-cdn.example/siren_loop.ogg', 0.6, Config.Sirens.coordsSirens[1], true)
         exports.xsound:setRange(sirenSoundId, Config.Sirens.range)
     else
         CreateThread(function()
@@ -111,16 +111,16 @@ RegisterNetEvent('lsd_flood:phaseChanged', function(phase, duration)
     currentPhase = phase
 
     if phase == 'alert' then
-        ESX.ShowNotification('~r~ALERTE CRUE~s~ : le barrage de Land Act menace de céder. Évacuez les quartiers bas immédiatement.')
+        ESX.ShowNotification('~r~ALERTE TSUNAMI~s~ : un mur d\'eau a été repéré au large. Évacuez les quartiers bas immédiatement.')
         createZoneBlips()
         playSirens()
         SetWeatherTypeOverTime('THUNDER', 20.0)
     elseif phase == 'rupture' then
         stopSirens()
-        ESX.ShowNotification('~r~LE BARRAGE A CÉDÉ~s~ : une vague déferle vers Los Santos. Fuyez les zones basses !')
+        ESX.ShowNotification('~r~LA VAGUE TOUCHE LA CÔTE~s~ : fuyez les zones basses immédiatement !')
     elseif phase == 'rising' then
         stopSirens()
-        ESX.ShowNotification('~r~RUPTURE DU BARRAGE~s~ : l\'eau monte. Rejoignez un point d\'évacuation en hauteur.')
+        ESX.ShowNotification('~r~LE TSUNAMI FRAPPE~s~ : l\'eau monte. Rejoignez un point d\'évacuation en hauteur.')
     elseif phase == 'peak' then
         ESX.ShowNotification('Le niveau de l\'eau s\'est stabilisé. Restez en hauteur.')
     elseif phase == 'receding' then
@@ -143,7 +143,7 @@ CreateThread(function()
         if currentPhase ~= 'idle' then
             local label = ({
                 alert = 'ALERTE - Évacuation en cours',
-                rupture = 'LE BARRAGE A CÉDÉ - VAGUE EN APPROCHE',
+                rupture = 'TSUNAMI - IMPACT EN COURS',
                 rising = 'CRUE EN COURS - Niveau en hausse',
                 peak = 'NIVEAU MAXIMUM ATTEINT',
                 receding = 'DÉCRUE EN COURS'

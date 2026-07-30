@@ -14,114 +14,70 @@ Config.AdminPanel = {
     key     = 'F6'
 }
 
--- Coordonnées relevées dans ch3_08.ymap (secteur cityhills_03).
--- Le barrage se situe autour de x=1662, y=-18, z=157.
-Config.Dam = {
-    label = 'Barrage de Land Act',
-    coords = vector3(1662.3, -18.4, 157.3),   -- ch3_08_dam_slod
-
-    -- Point de la brèche: face aval du mur, d'où l'eau se déverse vers les
-    -- déversoirs. À affiner en jeu avec /damscan une fois sur place.
-    breach = {
-        coords  = vector3(1655.0, -30.0, 140.0),
-        heading = 250.0,  -- projection vers l'ouest, dans l'axe des déversoirs
-        width   = 18.0    -- largeur de la brèche (nb d'émetteurs répartis dessus)
-    }
-}
-
 -- Durées de chaque phase (secondes)
 Config.Phases = {
-    alert     = 45,   -- sirènes + alerte radio, pas encore d'eau
-    rupture   = 25,   -- explosion + effondrement du barrage + départ de la vague
-    rising    = 480,  -- montée progressive de l'eau (8 min)
-    peak      = 120,  -- eau au maximum, stable
-    receding  = 300   -- décrue progressive
+    alert     = 60,    -- alerte tsunami: sirènes, le mur d'eau est visible au loin sur l'océan
+    rupture   = 90,    -- le tsunami traverse l'océan et touche la côte (landfall)
+    rising    = 480,   -- montée progressive de l'eau sur la ville (8 min)
+    peak      = 120,   -- eau au maximum, stable
+    receding  = 300    -- décrue progressive
 }
 
 -- ============================================================
--- RUPTURE DU BARRAGE
+-- TSUNAMI — plus simple et plus fiable qu'une rupture de barrage:
+-- pas de modèle à casser, pas de collision à éditer. Juste une vague
+-- qui vient du large, visible longtemps avant d'arriver, qui touche
+-- la côte puis recouvre la ville (la montée d'eau elle-même est gérée
+-- par client/water.lua, indépendamment).
 -- ============================================================
-Config.Rupture = {
-    -- Charges explosives déclenchées en cascade sur la crête du barrage.
-    -- offset = décalage par rapport à Config.Dam.breach.coords
-    explosions = {
-        { offset = vector3(-14.0, 6.0, 12.0), delay = 0,    type = 5,  scale = 1.0 },
-        { offset = vector3(  0.0, 0.0, 12.0), delay = 900,  type = 5,  scale = 1.0 },
-        { offset = vector3( 14.0,-6.0, 12.0), delay = 1700, type = 5,  scale = 1.0 },
-        { offset = vector3( -6.0, 2.0,  4.0), delay = 2600, type = 13, scale = 0.8 },
-        { offset = vector3(  6.0,-2.0,  4.0), delay = 3100, type = 13, scale = 0.8 }
+Config.Tsunami = {
+    -- Point de départ, loin en mer (visible à l'horizon depuis la côte).
+    origin = vector3(-5800.0, -4200.0, 0.0),
+
+    -- Premier point de la côte touché (Del Perro / Vespucci).
+    landfall = vector3(-1650.0, -900.0, 0.0),
+
+    -- Trajet complet: du large jusqu'aux quartiers bas, en passant par la
+    -- côte. Chaque segment peut avoir une vitesse différente (plus lent au
+    -- large pour qu'on le voie venir, plus rapide une fois à terre).
+    path = {
+        vector3(-5800.0, -4200.0, 0.0),  -- origine, au large
+        vector3(-3800.0, -3000.0, 0.0),
+        vector3(-2600.0, -1900.0, 0.0),
+        vector3(-1650.0,  -900.0, 0.0),  -- landfall: Del Perro/Vespucci
+        vector3(-1097.0, -1520.0, 0.0),  -- Vespucci
+        vector3(  200.0,  -900.0, 0.0),  -- Legion Square
+        vector3(  280.0, -2780.0, 0.0),  -- Elysian Island
+        vector3(  390.0, -1932.0, 0.0)   -- Rancho
     },
 
-    -- Remplacement visuel du barrage intact par une version éventrée.
-    -- IMPORTANT: nécessite VOTRE asset (voir README). Laissez à nil pour
-    -- désactiver proprement — le reste de l'effet fonctionne sans.
-    modelSwap = {
-        enabled   = false,
-        srcModel  = nil,   -- ex: 'des_damdoors' (à trouver via /damscan)
-        dstModel  = nil,   -- ex: 'lsd_dam_broken' (votre prop custom streamé)
-        radius    = 60.0
-    },
+    -- Durée totale du trajet. Long exprès: le joueur voit la vague monter
+    -- à l'horizon pendant l'alerte, avant qu'elle ne touche terre.
+    travelTime = 240,
 
-    -- Masquage d'une portion du barrage (sans asset de remplacement) :
-    -- crée un "trou" visuel par lequel l'eau jaillit.
-    --
-    -- Le barrage est composé de plusieurs morceaux distincts, relevés dans
-    -- ch3_08.ymap. Les noms ci-dessous sont les noms HD déduits des entités
-    -- LOD (règle vérifiée sur un cas réel : ch3_08_damculvert001_lod a pour
-    -- enfant HD ch3_08_damculvert001).
-    -- ⚠️ À CONFIRMER en jeu avec /damscan avant de mettre enabled = true.
-    modelHide = {
-        enabled = false,
-        radius  = 40.0,
-        models  = {
-            'ch3_08_dam_plat',      -- plateforme      (1662.1, -25.8, 169.3)
-            'ch3_08_dam_corr',      -- passerelle      (1661.8,  -2.9, 168.5)
-            'ch3_08_dam_mp003',     -- mur             (1659.5, -23.5, 163.9)
-            'ch3_08_dam_mp2_01',    -- mur             (1660.9, -20.4, 157.2)
-            'ch3_08_dam_scaff'      -- échafaudage     (1656.3, -52.5, 156.7)
-        }
-    },
+    -- Portion du trajet visible "au loin" avant l'impact (fraction 0-1 du
+    -- travelTime). Pendant cette portion, seul un mur visuel distant et un
+    -- grondement sont joués — pas d'impact physique, le joueur ne fait que
+    -- la voir venir.
+    landfallProgress = 0.35,
 
-    -- Particules du torrent jaillissant de la brèche.
-    -- ⚠️ Ces noms d'assets ptfx sont des CANDIDATS à valider en jeu avec
-    -- /ptfxtest <dict> <effet> — voir README, section "Valider les ptfx".
-    ptfx = {
-        dict   = 'core',
-        effect = 'water_splash_ped_in',
-        scale  = 6.0,
-        emitterSpacing = 3.0,   -- un émetteur tous les X mètres sur la brèche
-        renderDistance = 350.0  -- au-delà, les émetteurs ne sont pas créés (perf)
-    },
+    width      = 400.0,  -- largeur du front de vague (mur visuel + zone d'impact)
+    wallHeight = 45.0,   -- hauteur du mur d'eau visuel (marker)
+    ptfxScale  = 12.0,
 
-    -- Vague de crue qui part du barrage et déferle vers la ville.
-    -- Chaque node = un point de passage; travelTime = durée totale du trajet.
-    wave = {
-        enabled    = true,
-        travelTime = 180,  -- secondes pour aller du barrage aux quartiers bas
-        width      = 90.0, -- rayon d'influence de la vague (knockback)
-        ptfxScale  = 9.0,
-        -- Trajet calqué sur les déversoirs réels du barrage (relevés dans
-        -- ch3_08.ymap) : l'eau descend en escalier 157 -> 123 -> 91 -> 61,
-        -- puis rejoint les quartiers bas. Les 4 premiers points sont des
-        -- positions exactes du jeu, les suivants sont à affiner en jeu.
-        path = {
-            vector3(1655.0,  -30.0, 145.0),  -- brèche du barrage
-            vector3(1577.3,  -35.6, 122.8),  -- ch3_08_weir_03
-            vector3(1433.7,  -63.4,  91.0),  -- ch3_08_weir_02
-            vector3(1192.5,  -93.9,  61.1),  -- ch3_08_weir_01
-            vector3( 900.0, -400.0,  40.0),
-            vector3( 650.0, -900.0,  28.0),
-            vector3( 450.0,-1450.0,  20.0),
-            vector3( 390.0,-1932.0,  12.0)   -- Rancho
-        }
-    },
-
-    -- Effets ressentis par le joueur au passage de la vague
+    -- Effets ressentis par le joueur au passage du front (après landfall
+    -- uniquement — pendant l'approche au loin, aucun impact)
     impact = {
-        ragdollPlayers   = true,
-        ragdollDuration  = 3000,
-        vehicleForce     = 12.0,  -- poussée appliquée aux véhicules pris dedans
-        camShake         = 'LARGE_EXPLOSION_SHAKE'
+        ragdollPlayers  = true,
+        ragdollDuration = 3000,
+        vehicleForce    = 14.0,
+        camShake        = 'LARGE_EXPLOSION_SHAKE'
+    },
+
+    -- Grondement qui s'intensifie à mesure que la vague approche
+    rumble = {
+        enabled  = true,
+        soundset = 'DLC_HEIST_HACKING_SNAKE_SOUNDS'
     }
 }
 
@@ -131,8 +87,8 @@ Config.Rupture = {
 -- ============================================================
 Config.Spectacle = {
 
-    -- Le barrage alimente la ville : il cède, Los Santos (Sud) s'éteint,
-    -- Blaine County (Nord) reste sur son propre réseau.
+    -- Le tsunami détruit les infrastructures électriques du littoral :
+    -- Los Santos (Sud) s'éteint, Blaine County (Nord) reste sur son propre réseau.
     --
     -- GTA n'a qu'un interrupteur global pour les lumières artificielles
     -- (pas de version par zone dans le moteur), donc l'effet est simulé
@@ -205,12 +161,12 @@ Config.Spectacle = {
     -- Alertes diffusées au fil de l'event
     messages = {
         alert = {
-            '~r~ALERTE~s~ — Le barrage de Land Act présente une brèche critique.',
+            '~r~ALERTE TSUNAMI~s~ — Un mur d\'eau a été repéré au large.',
             '~y~Les services d\'urgence ordonnent l\'évacuation des quartiers bas.',
-            '~y~Rejoignez les points d\'évacuation signalés sur votre carte.'
+            '~r~La vague est visible à l\'horizon. Rejoignez la hauteur MAINTENANT.'
         },
         rupture = {
-            '~r~LE BARRAGE A CÉDÉ.~s~ Une vague déferle vers Los Santos.',
+            '~r~LA VAGUE TOUCHE LA CÔTE.~s~ Impact imminent sur Los Santos.',
             '~r~Coupure générale du réseau électrique.',
             '~y~Fuyez les zones basses IMMÉDIATEMENT.'
         },
@@ -317,11 +273,10 @@ Config.Sirens = {
     soundset = 'DLC_HEIST_HACKING_SNAKE_SOUNDS',
     -- fallback: sirène via native PLAY_SOUND_FROM_COORD, réutilise un son d'alarme existant du jeu
     coordsSirens = {
-        vector3(1662.3, -18.4, 157.3),  -- barrage
+        vector3(-1580.0, -450.0, 32.0),  -- Del Perro, première zone côtière touchée
         vector3(390.0, -1932.0, 22.0),
         vector3(280.0, -2780.0, 5.0),
         vector3(-230.0, -2900.0, 5.0),
-        vector3(-1580.0, -450.0, 32.0),
         vector3(200.0, -900.0, 28.0)
     },
     range = 600.0

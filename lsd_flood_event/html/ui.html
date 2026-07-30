@@ -65,7 +65,7 @@
   <header>
     <div>
       <h1>LAND ACT — PANEL DE CONTRÔLE</h1>
-      <div class="sub">Rupture du barrage &amp; outils admin — F6 pour fermer</div>
+      <div class="sub">Tsunami &amp; outils admin — F6 pour fermer</div>
     </div>
     <button onclick="closePanel()">Fermer (ECHAP)</button>
   </header>
@@ -160,8 +160,8 @@
       <div class="grid" id="evacTeleports"></div>
       <div class="cat">Téléportation — zones inondées</div>
       <div class="grid" id="zoneTeleports"></div>
-      <div class="cat">Téléportation — barrage</div>
-      <div class="row"><button class="act" onclick="send('teleportDam')">Aller au barrage</button></div>
+      <div class="cat">Téléportation — point de landfall</div>
+      <div class="row"><button class="act" onclick="send('teleportCoast')">Aller au point d'impact du tsunami</button></div>
       <div class="cat">Coordonnées manuelles</div>
       <div class="row">
         <input type="number" id="tpX" placeholder="X"><input type="number" id="tpY" placeholder="Y"><input type="number" id="tpZ" placeholder="Z">

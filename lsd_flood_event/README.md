@@ -1,7 +1,9 @@
-# lsd_flood_event — Rupture du barrage de Land Act
+# lsd_flood_event — Tsunami sur Los Santos
 
-Event d'ouverture de serveur ESX : sirènes, alerte, montée d'eau progressive,
-évacuation et système de survie (noyade) synchronisé pour tous les joueurs.
+Event d'ouverture de serveur ESX : alerte, tsunami visible au large qui
+approche pendant plusieurs minutes, impact sur la côte, montée d'eau
+progressive sur toute la ville, décrue, panel admin complet et menu
+contextuel RP.
 
 ## Installation
 
@@ -15,134 +17,92 @@ Event d'ouverture de serveur ESX : sirènes, alerte, montée d'eau progressive,
 
 ## Déclenchement
 
-- `/startflood` : lance la séquence complète (alerte → crue → pic → décrue).
+- `/startflood` : lance la séquence complète (alerte → tsunami → crue → pic → décrue).
 - `/stopflood` : interrompt l'event et revient à l'état normal.
-- Pour un déclenchement automatique à l'ouverture du serveur, ajoutez dans
-  `server/main.lua` un appel `runFloodSequence()` dans un `CreateThread` au
-  démarrage de la ressource plutôt que d'attendre la commande.
+- **F6** : panel admin complet (contrôle de l'event, météo/heure, blackout,
+  véhicules, armes, outils joueur).
+- **ALT** : menu contextuel RP (soi-même, joueur ciblé, véhicule, sol/admin).
 
-## Points importants à savoir (honnêteté technique)
+## Comment ça marche
 
-- **L'eau réelle de GTA V (heightmap native) n'est pas modifiable en temps
-  réel côté client.** Ce script simule donc la crue avec un objet translucide
-  (`Config.WaterProp`) qui suit `GlobalState.lsd_waterLevel`. Pour un rendu
-  premium, remplacez `Config.WaterProp.model` par votre propre asset eau
-  (ymap/shader) — c'est le point d'extension prévu pour "la claque visuelle".
-- **La logique de noyade/dégâts est 100% scriptée** (comparaison de
-  coordonnées Z par rapport au niveau d'eau + zones inondées définies dans
-  `Config.FloodZones`), pas basée sur la physique d'eau native — ce qui la
-  rend fiable même avec l'eau "fake".
-- **La synchro utilise des `GlobalState` (statebags)**, pas des events
-  spammés en boucle : chaque client lit l'état à son rythme, ce qui garde
-  le serveur stable même avec beaucoup de joueurs connectés.
-- **Sirènes** : utilise `xsound` si présent (recommandé, mettez l'URL de
-  votre fichier audio de sirène dans `Config.Sirens.url`) sinon fallback sur
-  un son natif en boucle.
+### Le tsunami
+Un front d'eau part du large (`Config.Tsunami.origin`) et voyage jusqu'à la
+ville en suivant `Config.Tsunami.path`, sur `Config.Tsunami.travelTime`
+secondes (4 min par défaut). Sa position est calculée depuis un horodatage
+serveur partagé, donc tous les joueurs le voient au même endroit au même
+instant — y compris un joueur qui se connecte en cours d'event.
 
-## Trouver la bonne configuration d'eau (IMPORTANT — à faire avant tout)
+Pendant la première partie du trajet (`landfallProgress`, 35% par défaut),
+la vague est **visible mais sans impact** : un mur (marker natif, pas
+d'asset custom nécessaire) et un grondement qui s'intensifie avec la
+proximité. Une fois `landfallProgress` atteint, elle produit de l'écume et
+un vrai impact physique (ragdoll des joueurs, poussée des véhicules) pour
+quiconque se trouve dans sa largeur.
 
-Le premier test a montré une eau "en l'air", sans volume, visible seulement
-près des plages : ça vient des flags de quad (`NoStencil`, `Type`, alpha)
-que GTA utilise pour décider où l'eau peut réellement s'afficher au-dessus
-du terrain. Je ne peux pas connaître la bonne combinaison sans tester en
-jeu, donc `tools/generate_water_levels.py` génère maintenant 6 variantes de
-diagnostic (`stream/water_var_v1.xml` à `v6`), toutes à 30m de haut.
+### La montée d'eau
+Indépendante du tsunami : `client/water.lua` recharge des fichiers
+`water.xml` pré-générés (un par palier de hauteur) via `LoadWaterFromPath`,
+la seule méthode qui force réellement le moteur à re-rendre l'eau — les
+natives `SetWaterQuadLevel` seules ne suffisent pas, elles changent les
+données mais pas l'affichage.
 
-**Faites ça en premier :**
+Ces fichiers sont dans `stream/water_lvl_XX.xml`, générés depuis un
+`water.xml` extrait du jeu par `tools/generate_water_levels.py`. Ils
+couvrent toute la carte (pas seulement les zones déjà aquatiques d'origine),
+donc l'eau monte vraiment sur la ville, pas juste sur les plages.
 
+Pour régénérer avec un autre `water.xml` ou d'autres paliers :
 ```
-/watervariant v1
+python3 tools/generate_water_levels.py water.xml --min 0 --max 150 --step 5
 ```
+Puis recopiez la ligne `levels = {...}` affichée dans `Config.Water.levels`.
 
-Regardez le résultat (volume sous la surface ? eau en ville ou juste aux
-plages ?), puis testez `v2`, `v3`, etc. Notez laquelle donne une vraie nappe
-d'eau qui recouvre le terrain avec du volume dessous.
+### La noyade
+100% scriptée (comparaison de coordonnées Z par rapport au niveau d'eau +
+zones inondées définies dans `Config.FloodZones`), pas basée sur la
+physique d'eau native.
 
-Une fois la bonne variante identifiée, régénérez tous les paliers avec :
+### La synchro
+`GlobalState` (statebags), pas des events spammés en boucle : chaque
+client lit l'état à son propre rythme, ce qui garde le serveur stable même
+avec beaucoup de joueurs connectés.
 
-```
-python3 tools/generate_water_levels.py water.xml --variant v3
-```
-
-(remplacez `v3` par celle qui a marché), puis recopiez la ligne `levels = {...}`
-affichée dans `Config.Water.levels`.
-
-## La rupture du barrage — ce qui est possible, et ce qui ne l'est pas
-
-**Le barrage de Land Act ne peut pas être réellement détruit par script.**
-C'est de la géométrie de map statique : aucune native ne permet de la casser,
-de la déformer ou d'y percer un trou en runtime. Toute ressource qui prétend
-le contraire fait en réalité l'une des trois choses ci-dessous.
-
-Ce script combine les trois pour obtenir l'illusion la plus convaincante
-possible :
-
-### 1. Explosions en cascade (`Config.Rupture.explosions`)
-5 charges déclenchées en séquence sur la crête, avec secousse de caméra et
-vibration manette **ressenties dans toute la ville**, atténuées avec la
-distance. C'est le moment "le barrage vient de céder". Fonctionne
-immédiatement, sans aucun asset.
-
-### 2. Effondrement visuel (`modelSwap` / `modelHide`) — **désactivé par défaut**
-Deux options, toutes deux à activer manuellement :
-
-- **`modelHide`** : masque un morceau du barrage avec `CreateModelHide`, ce
-  qui crée un trou visuel par lequel le torrent jaillit. Ne nécessite aucun
-  asset — mais ne fonctionne **que si le morceau visé est une entité**, pas
-  de la géométrie baked.
-- **`modelSwap`** : remplace le barrage intact par une version éventrée avec
-  `CreateModelSwap`. **Nécessite votre propre prop de barrage cassé** streamé
-  dans la ressource. C'est la seule méthode qui donne un vrai rendu "béton
-  arraché". Un modeleur 3D ou un asset payant est requis ici.
-
-👉 **Pour créer le prop de barrage cassé, suivez [MAPPING.md](MAPPING.md)** —
-guide pas à pas (CodeWalker, Blender/Sollumz, collision, LOD, streaming).
-
-**Comment savoir laquelle marche chez vous** : en jeu, visez le barrage et
-tapez `/damscan`. La console vous dira si vous visez une entité (→ hide/swap
-possible, le hash est affiché) ou de la géométrie de map pure (→ il faut un
-override de ymap/ydr streamé).
-
-### 3. Le torrent + la vague déferlante
-- **Torrent permanent** : des émetteurs de particules répartis sur la largeur
-  de la brèche (`Config.Dam.breach.width`), créés uniquement quand un joueur
-  est à portée et détruits dès qu'il s'éloigne → zéro coût FPS en ville.
-- **Vague déferlante** : un front d'eau qui voyage du barrage jusqu'à Rancho
-  en suivant `Config.Rupture.wave.path` (3 min par défaut). Les joueurs pris
-  dedans sont **ragdollés**, et les véhicules **projetés** par une force
-  physique. Sa position est calculée depuis l'horodatage serveur partagé,
-  donc tout le monde la voit au même endroit au même instant — y compris un
-  joueur qui se connecte en pleine crue.
-
-### Valider les ptfx ⚠️
-Les noms d'assets de particules dans `Config.Rupture.ptfx` sont des
-**candidats à vérifier en jeu** — je ne peux pas garantir de mémoire qu'un
-couple dict/effet existe dans votre build. Utilisez la commande fournie :
-
-```
-/ptfxtest core water_splash_ped_in 6.0
-```
-
-Elle joue l'effet à vos pieds pendant 10s et affiche OK ou Échec en console.
-Testez plusieurs candidats, gardez le plus impressionnant, et reportez-le
-dans `Config.Rupture.ptfx`. Quelques pistes à essayer : `water_splash_ped_in`,
-`water_splash_veh_in`, `ent_amb_waterfall`.
+### Le blackout Sud/Nord
+GTA n'a qu'un interrupteur global pour les lumières artificielles (pas de
+version par zone dans le moteur). L'effet "Sud coupé, Nord épargné" est
+donc simulé par position : chaque client active/désactive SES lumières
+selon l'endroit où IL se trouve. Réglable dans
+`Config.Spectacle.blackout.boundaryY`.
 
 ## Configuration
 
 Tout se règle dans `shared/config.lua` :
 - `Config.Phases` : durée de chaque phase.
-- `Config.WaterLevel` : niveau de base et niveau max de la crue.
-- `Config.FloodZones` : quartiers touchés (centre + rayon) pour les dégâts et blips.
+- `Config.Tsunami` : trajet, vitesse, largeur, hauteur du mur visuel, impact.
+- `Config.WaterLevel` / `Config.Water.levels` : niveau de crue et paliers pré-générés.
+- `Config.FloodZones` : quartiers touchés (dégâts, blips).
 - `Config.EvacPoints` : points hauts sûrs affichés sur la carte.
-- `Config.Survival` : intervalle de vérification, dégâts, tolérance de submersion.
-- `Config.Dam.breach` : position/orientation/largeur de la brèche (réglez avec `/damscan`).
-- `Config.Rupture` : explosions, effondrement, particules, trajet et impact de la vague.
+- `Config.Survival` : dégâts de noyade.
+- `Config.Spectacle` : blackout, météo, panique PNJ, débris, hélicoptères, messages.
+- `Config.SelfAnimations` : animations du menu ALT.
+- `Config.VehicleCatalog` / `Config.WeaponCatalog` : catalogues du panel F6.
 
 ## Commandes développeur
 
 Activables/désactivables via `Config.DevCommands`.
 
-- `/damscan` : affiche vos coordonnées, le point visé et le modèle sous le
-  viseur. Sert à régler la brèche et à identifier le modèle du barrage.
 - `/ptfxtest <dict> <effet> [echelle]` : teste un effet de particules.
+- `/tsunamiinfo` : progression du tsunami, distance, statut landfall.
+- `/watertest <niveau>` / `/waterreset` / `/waterinfo` : teste la montée d'eau sans lancer l'event.
+- `/animtest <dict> <clip>` : teste une animation avant de l'ajouter à `Config.SelfAnimations`.
+
+## Points d'honnêteté technique à connaître
+
+- Les noms d'assets de particules (`water_splash_ped_in`) et les animations
+  du menu ALT sont des choix raisonnablement fiables mais **non testés en
+  jeu de mon côté** — validez-les avec les commandes ci-dessus avant de
+  compter dessus pour un event en production.
+- Le mur visuel du tsunami est un `DrawMarker`, pas un modèle 3D custom :
+  fiable et sans dépendance, mais moins détaillé qu'un asset dédié. C'est
+  un choix assumé pour éviter la fragilité du mapping (Blender, collision,
+  LOD) qu'on a abandonnée pour ce projet.

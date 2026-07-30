@@ -57,9 +57,9 @@ RegisterNUICallback('nuiAction', function(body, cb)
         local ped = PlayerPedId()
         SetEntityCoords(ped, data.x, data.y, data.z, false, false, false, false)
 
-    elseif action == 'teleportDam' then
+    elseif action == 'teleportCoast' then
         local ped = PlayerPedId()
-        local d = Config.Dam.coords
+        local d = Config.Tsunami.landfall
         SetEntityCoords(ped, d.x, d.y, d.z + 5.0, false, false, false, false)
 
     elseif action == 'toggleGodmode' then

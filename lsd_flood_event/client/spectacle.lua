@@ -130,9 +130,9 @@ CreateThread(function()
                         SetPedFleeAttributes(ped, 0, false)
                         SetPedPanicExitScenario(ped, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
                         ClearPedTasksImmediately(ped)
-                        -- fuite loin du barrage / de la montée d'eau
-                        TaskSmartFleeCoord(ped, Config.Dam.coords.x, Config.Dam.coords.y,
-                                           Config.Dam.coords.z, 500.0, -1, false, false)
+                        -- fuite loin de l'océan / de la montée d'eau
+                        local origin = Config.Tsunami.origin
+                        TaskSmartFleeCoord(ped, origin.x, origin.y, origin.z, 500.0, -1, false, false)
                         SetPedKeepTask(ped, true)
                         panicked[ped] = true
                         count = count + 1
