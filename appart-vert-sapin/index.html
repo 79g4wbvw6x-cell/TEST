@@ -71,15 +71,16 @@ body.render .ui { display: none !important; }
 
 <section class="ui card" aria-label="Informations">
   <h1>Studio Vert Sapin</h1>
-  <div class="sub dims">≈ 16 m² · pièce 2,35 × 5,65 m · salle d'eau 1,40 × 1,40 m</div>
+  <div class="sub dims">≈ 15,2 m² au sol · pièce 2,05 × 5,75 m · salle d'eau 1,35 × 1,95 m</div>
   <details id="infos">
     <summary>Le projet</summary>
     <ul>
-      <li>Cuisine 1,80 m en vert sapin mat, plan en chêne, crédence zellige blanc, plaque induction 2 feux, frigo intégré.</li>
-      <li>Coin repas : table rabattable en chêne et suspension.</li>
-      <li>Salon sous la mezzanine : banquette-lit à la place du canapé noir, mur vert profond, rangements en chêne.</li>
-      <li>Salle d'eau : douche à l'italienne en zellige vert, WC suspendu, vasque sur meuble.</li>
-      <li>Placard technique : lave-linge et étagères.</li>
+      <li>Cuisine vert sapin mat, plan en chêne, crédence en zellige blanc, plaque induction 2 feux.</li>
+      <li>Frigo vintage crème au bout de la cuisine, micro-ondes dans une niche juste au-dessus.</li>
+      <li>Salon : banquette-lit à la place du canapé noir, avec 2 tiroirs dessous. La TV est à droite de la porte-fenêtre, face à la banquette.</li>
+      <li>Rangements : meubles hauts jusqu'au plafond, placards au-dessus de l'entrée, coffres au-dessus de la banquette, meuble bas, étagère au-dessus de la table et placard technique.</li>
+      <li>Salle d'eau : douche à gauche, vasque avec armoire de toilette au fond, WC suspendu à droite avec placards au-dessus.</li>
+      <li>Nouveau radiateur vertical vert sapin.</li>
     </ul>
     <p class="sub">Les dimensions sont estimées à partir de la vidéo et des photos, à remplacer par les vraies mesures.</p>
     <div class="swatches">
@@ -132,12 +133,14 @@ const RENDER = params.has('render');
 if (RENDER) document.body.classList.add('render');
 
 /* ---------- Dimensions (mètres) ---------- */
-const W = 2.35;          // largeur pièce principale
-const L = 5.65;          // longueur pièce principale
+const W = 2.05;          // largeur pièce principale
+const L = 5.75;          // longueur pièce principale
 const H = 2.70;          // hauteur sous plafond
-const ZM = 2.90;         // début de la mezzanine
+const ZM = 2.75;         // début de la mezzanine
 const HM = 2.25;         // dessous de la mezzanine
-const B0 = W + 0.08, B1 = B0 + 1.40, BZ0 = 2.95, BZ1 = 4.35; // salle d'eau
+const B0 = W + 0.08, B1 = B0 + 1.35, BZ0 = 2.90, BZ1 = 4.85; // salle d'eau
+const BD0 = 3.55, BD1 = 4.25;   // porte de la salle d'eau
+const PF0 = 1.18, PF1 = 1.93;   // porte-fenêtre du salon, presque contre le mur de gauche
 const T = 0.12;          // épaisseur des murs
 
 /* ---------- Renderer ---------- */
@@ -349,279 +352,312 @@ function wall(axis, c, dir, a, b, h, holes, mat, y0 = 0) {
 /* ---------- Coque ---------- */
 // sols
 B(0, -0.05, 0, W, 0, L, M.floor, { group: groups.shell });
-B(0.0, -0.05, -0.9, 0.85, 0, 0, M.floor, { group: groups.shell });
-B(W, -0.05, 3.45, B0, 0.003, 4.15, M.oak, { group: groups.shell });
+B(0.0, -0.05, -0.9, 0.83, 0, 0, M.floor, { group: groups.shell });
+B(W, -0.05, BD0, B0, 0.003, BD1, M.oak, { group: groups.shell });
 B(B0, -0.05, BZ0, B1, 0, BZ1, M.terrazzo, { group: groups.shell });
 // murs pièce principale
 wall('x', 0, -1, 0, ZM, H, [], M.wall);
 wall('x', 0, -1, ZM, L, HM, [], M.wallGreen);
 wall('x', 0, -1, ZM, L, H, [], M.wall, HM);
-wall('x', W, 1, 0, L, H, [[0.15, 1.0, 0, 2.05], [3.45, 4.15, 0, 2.05]], M.wall);
-wall('z', 0, -1, 0, W, H, [[0.05, 0.80, 0, 2.05], [0.98, 1.78, 0.95, 2.40]], M.wall);
-wall('z', L, 1, 0, W, H, [[0.75, 1.55, 0, 2.12]], M.wall);
+wall('x', W, 1, 0, L, H, [[0.1, 0.95, 0, 2.05], [BD0, BD1, 0, 2.05]], M.wall);
+wall('z', 0, -1, 0, W, H, [[0.05, 0.78, 0, 2.05], [0.95, 1.7, 0.95, 2.40]], M.wall);
+wall('z', L, 1, 0, W, H, [[PF0, PF1, 0, 2.12]], M.wall);
 // placard technique
 wall('x', 0, -1, -0.9, 0, H, [], M.wall);
-wall('x', 0.85, 1, -0.9, 0, H, [], M.wall);
-wall('z', -0.9, -1, 0, 0.85, H, [], M.wall);
-B(0, H, -0.9, 0.85, H + 0.05, 0, M.ceil, { group: groups.ceil });
+wall('x', 0.83, 1, -0.9, 0, H, [], M.wall);
+wall('z', -0.9, -1, 0, 0.83, H, [], M.wall);
+B(0, H, -0.9, 0.83, H + 0.05, 0, M.ceil, { group: groups.ceil });
 // salle d'eau
-wall('x', B1, 1, BZ0, BZ1, HM, [[3.0, 3.42, 1.55, 1.95]], M.wall);
+wall('x', B1, 1, BZ0, BZ1, HM, [], M.wall);
 wall('z', BZ0, -1, W, B1 + T, HM, [], M.wall);
-wall('z', BZ1, 1, W, B1 + T, HM, [], M.wall);
+wall('z', BZ1, 1, W, B1 + T, HM, [[2.95, 3.3, 1.65, 2.0]], M.wall);
 B(W, HM, BZ0, B1, HM + 0.05, BZ1, M.ceil, { group: groups.ceil });
 // plafonds
 B(0, H, 0, W, H + 0.05, ZM, M.ceil, { group: groups.ceil });
 B(0, H - 0.25, 0, W, H, 0.22, M.ceil, { group: groups.ceil }); // retombée au-dessus de la fenêtre
 // mezzanine : dessous en tasseaux chêne + façade
-const mz = B(0, HM, ZM, W, HM + 0.06, L, M.slats, { group: groups.ceil, meters: false });
-mz.material = M.slats; slatTex.repeat.set(2.4, 1);
+B(0, HM, ZM, W, HM + 0.06, L, M.slats, { group: groups.ceil, meters: false });
+slatTex.repeat.set(2.1, 1);
 B(0, HM, ZM - 0.04, W, H, ZM, M.oakV, { group: groups.ceil });
-for (let i = 0; i < 22; i++) { const x = 0.03 + i * (W - 0.06) / 21; B(x - 0.012, HM + 0.02, ZM - 0.065, x + 0.012, H - 0.02, ZM - 0.04, M.oak, { group: groups.ceil }); }
+for (let i = 0; i < 19; i++) { const x = 0.03 + i * (W - 0.06) / 18; B(x - 0.012, HM + 0.02, ZM - 0.065, x + 0.012, H - 0.02, ZM - 0.04, M.oak, { group: groups.ceil }); }
 B(0, HM - 0.03, ZM - 0.04, W, HM, ZM + 0.02, M.greenDark, { group: groups.ceil });
 B(0.05, HM - 0.033, ZM + 0.025, W - 0.05, HM - 0.03, ZM + 0.05, M.led, { group: groups.ceil, cast: false });
-// plinthes
-[[0, 0.012, 2.7, ZM, M.wall], [W - 0.012, W, 1.0, 3.45, M.white], [W - 0.012, W, 4.15, L, M.white]].forEach(([a, b, z0, z1, m]) => B(a, 0, z0, b, 0.07, z1, m, { cast: false }));
 
 /* ---------- Fenêtre (mur du fond cuisine) ---------- */
 {
-  const x0 = 0.98, x1 = 1.78, y0 = 0.95, y1 = 2.40, f = 0.06;
+  const x0 = 0.95, x1 = 1.7, y0 = 0.95, y1 = 2.40, f = 0.06, xm = (x0 + x1) / 2;
   B(x0 - 0.25, y0 - 0.25, -1.6, x1 + 0.25, y1 + 0.3, -1.58, M.outside, { cast: false, receive: false, meters: false });
-  [[x0, x0 + f, y0, y1], [x1 - f, x1, y0, y1], [(x0 + x1) / 2 - f / 2, (x0 + x1) / 2 + f / 2, y0, 2.0]].forEach(([a, b, c, d]) => B(a, c, -0.1, b, d, -0.03, M.frame));
+  [[x0, x0 + f, y0, y1], [x1 - f, x1, y0, y1], [xm - f / 2, xm + f / 2, y0, 2.0]].forEach(([a, b, c, d]) => B(a, c, -0.1, b, d, -0.03, M.frame));
   [[y0, y0 + f], [2.0 - f / 2, 2.0 + f / 2], [y1 - f, y1]].forEach(([c, d]) => B(x0, c, -0.1, x1, d, -0.03, M.frame));
   B(x0, y0, -0.07, x1, y1, -0.065, M.glass, { cast: false });
-  B(x0 - 0.03, y0 - 0.04, -0.12, x1 + 0.03, y0, 0.06, M.white); // appui
-  // rideaux en lin
-  const rod = cyl(1.38, 2.5, 0.07, 0.01, 1.3, M.black, { rot: [0, 0, Math.PI / 2] });
+  B(x0 - 0.03, y0 - 0.04, -0.12, x1 + 0.03, y0, 0.06, M.white);
+  cyl(xm, 2.5, 0.07, 0.01, 1.2, M.black, { rot: [0, 0, Math.PI / 2] });
   const curtain = (cx, w) => {
     const g = new THREE.PlaneGeometry(w, 2.38, 40, 1); const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 38) * 0.025);
     g.computeVertexNormals();
     const m = new THREE.Mesh(g, M.linen); m.position.set(cx, 1.3, 0.09); m.castShadow = true; groups.furn.add(m);
   };
-  curtain(0.86, 0.32); curtain(1.9, 0.32);
+  curtain(0.84, 0.28); curtain(1.82, 0.28);
 }
 
-/* ---------- Placard technique ---------- */
+/* ---------- Placard technique : lave-linge + étagères ---------- */
 {
-  B(0.05, 0, -0.02, 0.8, 0.02, 0.0, M.oak); // seuil
-  B(0.02, 2.05, -0.06, 0.83, 2.12, 0.02, M.frame);
-  B(0.08, 0, -0.85, 0.68, 0.85, -0.25, M.white); // lave-linge
-  const door = cyl(0.38, 0.5, -0.245, 0.17, 0.02, M.glass, { rot: [Math.PI / 2, 0, 0] });
+  B(0.05, 0, -0.02, 0.78, 0.02, 0.0, M.oak);
+  B(0.02, 2.05, -0.06, 0.81, 2.12, 0.02, M.frame);
+  B(0.08, 0, -0.85, 0.68, 0.85, -0.25, M.white);
+  cyl(0.38, 0.5, -0.245, 0.17, 0.02, M.glass, { rot: [Math.PI / 2, 0, 0] });
   cyl(0.38, 0.5, -0.247, 0.2, 0.015, M.steel, { rot: [Math.PI / 2, 0, 0] });
   B(0.1, 0.78, -0.252, 0.66, 0.83, -0.247, M.black);
-  [1.15, 1.55, 1.95].forEach(y => B(0.0, y, -0.9, 0.85, y + 0.025, -0.45, M.oak));
-  [[1.18, '#efe7d6'], [1.58, '#174536'], [1.98, '#c9b28f']].forEach(([y, c], i) => {
-    for (let k = 0; k < 3; k++) RB(0.12 + k * 0.22, y, -0.82, 0.3 + k * 0.22, y + 0.22, -0.55, 0.03, new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 }));
+  [1.15, 1.55, 1.95, 2.35].forEach(y => B(0.0, y, -0.9, 0.83, y + 0.025, -0.45, M.oak));
+  [[1.18, '#efe7d6'], [1.58, '#174536'], [1.98, '#c9b28f'], [2.38, '#efe7d6']].forEach(([y, c]) => {
+    for (let k = 0; k < 3; k++) RB(0.1 + k * 0.22, y, -0.82, 0.28 + k * 0.22, y + 0.22, -0.55, 0.03, new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 }));
   });
 }
 
-/* ---------- Cuisine (mur x=0, z 0,90 → 2,70) ---------- */
-const KZ0 = 0.9, KZ1 = 2.7, KD = 0.6;
+/* ---------- Cuisine (mur x=0) : frigo vintage, plaque, évier ---------- */
+const KZ0 = 1.5, KZ1 = 2.7, KD = 0.6;
 {
-  B(0, 0, KZ0, KD - 0.06, 0.1, KZ1, M.black);                     // socle
-  B(0, 0.1, KZ0, KD - 0.02, 0.86, KZ1, M.greenDark);              // caissons
-  const doors = [[KZ0, 1.5, 'frigo'], [1.5, 2.1, 'tiroirs'], [2.1, 2.4, 'p'], [2.4, KZ1, 'p']];
-  for (const [a, b, kind] of doors) {
-    if (kind === 'tiroirs') {
-      B(KD - 0.02, 0.105, a + 0.002, KD, 0.47, b - 0.002, M.green);
-      B(KD - 0.02, 0.48, a + 0.002, KD, 0.855, b - 0.002, M.green);
-      B(KD, 0.82, a + 0.12, KD + 0.02, 0.83, b - 0.12, M.brass);
-      B(KD, 0.44, a + 0.12, KD + 0.02, 0.45, b - 0.12, M.brass);
-    } else {
-      B(KD - 0.02, 0.105, a + 0.002, KD, 0.855, b - 0.002, M.green);
-      const hz = kind === 'frigo' ? b - 0.05 : (a < 2.3 ? b - 0.05 : a + 0.05);
-      B(KD, 0.6, hz - 0.006, KD + 0.025, 0.83, hz + 0.006, M.brass);
-    }
-  }
+  // frigo vintage crème, format moyen (≈ 60 × 62 × 142 cm)
+  const fz0 = 0.86, fz1 = 1.46, fx1 = 0.64, fh = 1.42;
+  const fridge = new THREE.MeshStandardMaterial({ color: '#ede3cc', roughness: 0.22, metalness: 0.05 });
+  B(0.06, 0, fz0 + 0.05, 0.12, 0.08, fz0 + 0.1, M.steel); B(0.06, 0, fz1 - 0.1, 0.12, 0.08, fz1 - 0.05, M.steel);
+  B(fx1 - 0.12, 0, fz0 + 0.05, fx1 - 0.06, 0.08, fz0 + 0.1, M.steel); B(fx1 - 0.12, 0, fz1 - 0.1, fx1 - 0.06, 0.08, fz1 - 0.05, M.steel);
+  RB(0.02, 0.08, fz0, fx1 - 0.03, fh, fz1, 0.07, fridge);
+  RB(fx1 - 0.06, 1.0, fz0 + 0.004, fx1, fh - 0.01, fz1 - 0.004, 0.05, fridge);   // porte congélateur
+  RB(fx1 - 0.06, 0.1, fz0 + 0.004, fx1, 0.985, fz1 - 0.004, 0.05, fridge);        // porte frigo
+  const lever = (y0, y1) => {
+    B(fx1, y0, fz1 - 0.07, fx1 + 0.03, y0 + 0.03, fz1 - 0.04, M.steel);
+    B(fx1, y1 - 0.03, fz1 - 0.07, fx1 + 0.03, y1, fz1 - 0.04, M.steel);
+    cyl(fx1 + 0.03, (y0 + y1) / 2, fz1 - 0.055, 0.012, y1 - y0, M.steel);
+  };
+  lever(0.62, 0.93); lever(1.07, 1.3);
+  B(fx1 - 0.004, 0.2, (fz0 + fz1) / 2 - 0.07, fx1 + 0.004, 0.23, (fz0 + fz1) / 2 + 0.07, M.steel); // écusson chromé
+
+  // niche micro-ondes au-dessus du frigo + placard jusqu'au plafond
+  B(0, 1.5, fz0, 0.4, 1.52, fz1, M.oak);
+  B(0, 1.52, fz0, 0.4, 1.9, fz0 + 0.02, M.oak); B(0, 1.52, fz1 - 0.02, 0.4, 1.9, fz1, M.oak);
+  B(0, 1.9, fz0, 0.4, 1.92, fz1, M.oak);
+  B(0.03, 1.52, fz0 + 0.05, 0.36, 1.81, fz1 - 0.05, M.white);          // micro-ondes
+  B(0.36, 1.55, fz0 + 0.07, 0.365, 1.78, fz1 - 0.17, M.blackGlass);
+  B(0.36, 1.55, fz1 - 0.15, 0.365, 1.78, fz1 - 0.07, M.black);
+  B(0, 1.92, fz0, 0.36, H, fz1, M.greenDark);
+  B(0.36, 1.925, fz0 + 0.003, 0.38, H - 0.005, fz1 - 0.003, M.green);
+  B(0.38, 1.96, fz1 - 0.06, 0.395, 2.18, fz1 - 0.048, M.brass);
+
+  // meubles bas : plaque (tiroirs) + évier (2 portes)
+  B(0, 0, KZ0, KD - 0.06, 0.1, KZ1, M.black);
+  B(0, 0.1, KZ0, KD - 0.02, 0.86, KZ1, M.greenDark);
+  const HZ = 2.05;
+  B(KD - 0.02, 0.105, KZ0 + 0.002, KD, 0.47, HZ - 0.002, M.green);
+  B(KD - 0.02, 0.48, KZ0 + 0.002, KD, 0.855, HZ - 0.002, M.green);
+  B(KD, 0.82, KZ0 + 0.12, KD + 0.02, 0.83, HZ - 0.12, M.brass);
+  B(KD, 0.44, KZ0 + 0.12, KD + 0.02, 0.45, HZ - 0.12, M.brass);
+  const SM = (HZ + KZ1) / 2;
+  B(KD - 0.02, 0.105, HZ + 0.002, KD, 0.855, SM - 0.002, M.green);
+  B(KD - 0.02, 0.105, SM + 0.002, KD, 0.855, KZ1 - 0.002, M.green);
+  B(KD, 0.6, SM - 0.05, KD + 0.025, 0.83, SM - 0.038, M.brass);
+  B(KD, 0.6, SM + 0.038, KD + 0.025, 0.83, SM + 0.05, M.brass);
   // plan de travail chêne avec découpe d'évier
-  const sz0 = 2.18, sz1 = 2.62, sx0 = 0.1, sx1 = 0.48, ty = 0.86, tt = 0.9;
+  const sz0 = 2.18, sz1 = 2.6, sx0 = 0.1, sx1 = 0.48, ty = 0.86, tt = 0.9;
   B(0, ty, KZ0, KD + 0.02, tt, sz0, M.oak); B(0, ty, sz1, KD + 0.02, tt, KZ1, M.oak);
   B(0, ty, sz0, sx0, tt, sz1, M.oak); B(sx1, ty, sz0, KD + 0.02, tt, sz1, M.oak);
   const sinkM = new THREE.MeshStandardMaterial({ color: '#262727', roughness: 0.5 });
   B(sx0, tt - 0.2, sz0, sx1, tt - 0.19, sz1, sinkM); B(sx0, tt - 0.2, sz0, sx0 + 0.01, tt, sz1, sinkM); B(sx1 - 0.01, tt - 0.2, sz0, sx1, tt, sz1, sinkM);
   B(sx0, tt - 0.2, sz0, sx1, tt, sz0 + 0.01, sinkM); B(sx0, tt - 0.2, sz1 - 0.01, sx1, tt, sz1, sinkM);
   cyl((sx0 + sx1) / 2, tt - 0.188, (sz0 + sz1) / 2 + 0.1, 0.03, 0.004, M.steel);
-  // robinet noir mat
-  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0.05, tt, 2.4), new THREE.Vector3(0.05, 1.22, 2.4), new THREE.Vector3(0.16, 1.3, 2.4), new THREE.Vector3(0.27, 1.18, 2.4), new THREE.Vector3(0.28, 1.08, 2.4)]);
+  const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0.05, tt, 2.39), new THREE.Vector3(0.05, 1.22, 2.39), new THREE.Vector3(0.16, 1.3, 2.39), new THREE.Vector3(0.27, 1.18, 2.39), new THREE.Vector3(0.28, 1.08, 2.39)]);
   const tap = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.013, 12), M.black); tap.castShadow = true; groups.furn.add(tap);
-  B(0.03, tt, 2.46, 0.08, 1.02, 2.5, M.black);
-  // plaque induction
-  B(0.07, tt, 1.56, 0.53, tt + 0.005, 2.06, M.hob, { meters: false });
+  B(0.03, tt, 2.45, 0.08, 1.02, 2.49, M.black);
+  B(0.07, tt, 1.56, 0.53, tt + 0.005, 2.0, M.hob, { meters: false });
   // crédence zellige
   B(0, tt, KZ0, 0.012, 1.5, KZ1, M.zelW);
   zelW.repeat.set(1 / 0.6, 1 / 0.3); tileBumpW.repeat.copy(zelW.repeat);
-  // meubles hauts + hotte intégrée + micro-ondes
-  const UY0 = 1.52, UY1 = 2.32, UD = 0.35;
-  B(0, UY0, KZ0, UD - 0.02, UY1, KZ1, M.greenDark);
-  [[KZ0, 1.5], [1.5, 2.1], [2.1, KZ1]].forEach(([a, b], i) => {
-    if (i === 0) { // micro-ondes encastré + porte au-dessus
-      B(UD - 0.02, UY0 + 0.005, a + 0.003, UD, UY0 + 0.38, b - 0.003, M.blackGlass);
-      B(UD, UY0 + 0.05, b - 0.12, UD + 0.004, UY0 + 0.33, b - 0.03, M.black);
-      B(UD - 0.02, UY0 + 0.39, a + 0.003, UD, UY1 - 0.005, b - 0.003, M.green);
-      B(UD, UY0 + 0.42, a + 0.05, UD + 0.02, UY0 + 0.43, a + 0.3, M.brass);
+  // meubles hauts jusqu'au plafond (2 niveaux) + hotte intégrée
+  const UY0 = 1.52, UY1 = 2.24, UD = 0.35;
+  B(0, UY0, KZ0, UD - 0.02, H, KZ1, M.greenDark);
+  [[KZ0, HZ], [HZ, KZ1]].forEach(([a, b]) => {
+    const m = (a + b) / 2;
+    if (a === KZ0) { // hotte sous le meuble au-dessus de la plaque
+      B(0, UY0 - 0.04, a + 0.01, UD + 0.02, UY0, b - 0.01, M.steel);
+      B(UD - 0.02, UY0 + 0.005, a + 0.003, UD, UY1 - 0.005, b - 0.003, M.green);
+      B(UD, UY0 + 0.03, b - 0.06, UD + 0.02, UY0 + 0.25, b - 0.048, M.brass);
     } else {
-      const m = (a + b) / 2;
       B(UD - 0.02, UY0 + 0.005, a + 0.003, UD, UY1 - 0.005, m - 0.002, M.green);
       B(UD - 0.02, UY0 + 0.005, m + 0.002, UD, UY1 - 0.005, b - 0.003, M.green);
       B(UD, UY0 + 0.03, m - 0.03, UD + 0.02, UY0 + 0.2, m - 0.018, M.brass);
       B(UD, UY0 + 0.03, m + 0.018, UD + 0.02, UY0 + 0.2, m + 0.03, M.brass);
     }
+    B(UD - 0.02, UY1 + 0.005, a + 0.003, UD, H - 0.005, b - 0.003, M.green); // surmeuble
+    B(UD, UY1 + 0.03, m - 0.08, UD + 0.02, UY1 + 0.04, m + 0.08, M.brass);
   });
-  B(0, UY1, KZ0, UD, H, KZ1, M.green); // fileur jusqu'au plafond
-  B(0.0, UY0 - 0.012, KZ0 + 0.02, UD - 0.05, UY0 - 0.004, KZ1 - 0.02, M.led, { cast: false }); // ruban LED
+  B(0.0, UY0 - 0.012, HZ + 0.02, UD - 0.05, UY0 - 0.004, KZ1 - 0.02, M.led, { cast: false });
   // déco
-  RB(0.05, tt, 1.0, 0.07, 1.3, 1.36, 0.01, M.oak).rotation.z = 0.12;
-  cyl(0.25, tt + 0.1, 1.2, 0.07, 0.2, M.black, { rTop: 0.055 });
-  cyl(0.18, tt + 0.07, 2.66, 0.05, 0.14, M.ceramic);
-  for (let i = 0; i < 9; i++) { const lf = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), M.leaf); lf.scale.set(1, 0.4, 0.6); lf.position.set(0.18 + (rnd() - 0.5) * 0.08, tt + 0.16 + rnd() * 0.08, 2.66 + (rnd() - 0.5) * 0.08); lf.rotation.set(rnd(), rnd() * 3, rnd()); lf.castShadow = true; groups.furn.add(lf); }
+  RB(0.05, tt, 2.55, 0.07, 1.25, 2.68, 0.01, M.oak).rotation.z = 0.12;
+  cyl(0.3, tt + 0.1, 2.07, 0.065, 0.2, M.black, { rTop: 0.05 });
+  cyl(0.5, tt + 0.07, 2.66, 0.05, 0.14, M.ceramic);
+  for (let i = 0; i < 9; i++) { const lf = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), M.leaf); lf.scale.set(1, 0.4, 0.6); lf.position.set(0.5 + (rnd() - 0.5) * 0.08, tt + 0.16 + rnd() * 0.08, 2.66 + (rnd() - 0.5) * 0.08); lf.rotation.set(rnd(), rnd() * 3, rnd()); lf.castShadow = true; groups.furn.add(lf); }
 }
 
 /* ---------- Entrée + coin repas (mur x=W) ---------- */
 {
-  // porte d'entrée vert sapin, face intérieure
-  B(W - 0.05, 0, 0.15, W - 0.01, 2.05, 1.0, M.green);
-  B(W - 0.06, 1.0, 0.25, W - 0.05, 1.02, 0.9, M.greenDark);
-  B(W - 0.085, 1.0, 0.86, W - 0.05, 1.03, 0.92, M.brass);
-  [[0.15, 0.2], [0.95, 1.0]].forEach(([a, b]) => B(W - 0.07, 0, a - 0.05, W, 2.1, b - 0.05 + 0.05 * (a > 0.5), M.frame));
-  B(W - 0.07, 2.05, 0.1, W, 2.12, 1.05, M.frame);
+  B(W - 0.05, 0, 0.1, W - 0.01, 2.05, 0.95, M.green);
+  B(W - 0.06, 1.0, 0.2, W - 0.05, 1.02, 0.85, M.greenDark);
+  B(W - 0.085, 1.0, 0.81, W - 0.05, 1.03, 0.87, M.brass);
+  B(W - 0.07, 0, 0.05, W, 2.1, 0.1, M.frame); B(W - 0.07, 0, 0.95, W, 2.1, 1.0, M.frame);
+  B(W - 0.07, 2.05, 0.05, W, 2.12, 1.0, M.frame);
+  // placards au-dessus de la porte d'entrée
+  B(W - 0.36, 2.14, 0.02, W, H, 1.1, M.greenDark);
+  B(W - 0.38, 2.145, 0.025, W - 0.36, H - 0.005, 0.558, M.green); B(W - 0.38, 2.145, 0.562, W - 0.36, H - 0.005, 1.095, M.green);
+  [0.5, 0.62].forEach(z => B(W - 0.395, 2.17, z - 0.006, W - 0.38, 2.32, z + 0.006, M.brass));
   // patères
-  B(W - 0.03, 1.72, 1.15, W, 1.8, 1.32, M.oak);
-  [1.19, 1.28].forEach(z => cyl(W - 0.06, 1.76, z, 0.012, 0.06, M.brass, { rot: [0, 0, Math.PI / 2] }));
-  // table rabattable chêne
-  B(W - 0.62, 0.74, 1.3, W, 0.775, 2.15, M.oak);
-  B(W - 0.6, 0, 1.33, W - 0.57, 0.74, 1.36, M.black); B(W - 0.6, 0, 2.09, W - 0.57, 0.74, 2.12, M.black);
+  B(W - 0.03, 1.72, 1.98, W, 1.8, 2.35, M.oak);
+  [2.05, 2.16, 2.27].forEach(z => cyl(W - 0.06, 1.76, z, 0.012, 0.06, M.brass, { rot: [0, 0, Math.PI / 2] }));
+  // table rabattable chêne + étagère au-dessus
+  B(W - 0.52, 0.74, 1.12, W, 0.775, 1.88, M.oak);
+  B(W - 0.5, 0, 1.15, W - 0.47, 0.74, 1.18, M.black); B(W - 0.5, 0, 1.82, W - 0.47, 0.74, 1.85, M.black);
+  B(W - 0.25, 1.5, 1.1, W, 1.53, 1.9, M.oak);
+  [[1.18, '#efe7d6', 0.16], [1.3, '#1f5a45', 0.12], [1.42, '#c9b28f', 0.14]].forEach(([z, c, h]) => cyl(W - 0.12, 1.53 + h / 2, z, 0.05, h, new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 })));
+  for (let k = 0; k < 6; k++) cyl(W - 0.12, 1.545, 1.62 + 0.0, 0.11, 0.008, M.ceramic).position.y = 1.535 + k * 0.009;
   // tabourets
-  [[1.52], [1.95]].forEach(([z]) => {
-    const x = W - 0.85;
-    cyl(x, 0.65, z, 0.17, 0.035, M.oak);
+  [1.32, 1.68].forEach(z => {
+    const x = W - 0.66;
+    cyl(x, 0.65, z, 0.16, 0.035, M.oak);
     for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.6; const leg = cyl(x + Math.cos(a) * 0.1, 0.32, z + Math.sin(a) * 0.1, 0.012, 0.66, M.black); leg.rotation.set(Math.sin(a) * 0.1, 0, -Math.cos(a) * 0.1); }
   });
   // suspension
-  cyl(W - 0.32, 2.2, 1.72, 0.003, 1.0, M.black);
-  const shade = new THREE.Mesh(new THREE.SphereGeometry(0.15, 32, 16, 0, 7, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#173f33', roughness: 0.4, side: THREE.DoubleSide }));
-  shade.position.set(W - 0.32, 1.55, 1.72); shade.castShadow = true; groups.furn.add(shade);
-  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), M.bulb); bulb.position.set(W - 0.32, 1.53, 1.72); groups.furn.add(bulb);
-  // fruits / vase sur table
-  cyl(W - 0.3, 0.83, 1.85, 0.1, 0.11, M.ceramic, { rTop: 0.13 });
-  [[0, 0], [0.05, 0.03], [-0.04, 0.04]].forEach(([dx, dz], i) => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), new THREE.MeshStandardMaterial({ color: ['#d18a3b', '#9db04a', '#d6b443'][i], roughness: 0.5 })); s.position.set(W - 0.3 + dx, 0.89, 1.85 + dz); groups.furn.add(s); });
-  // cadre
-  B(W - 0.025, 1.15, 2.3, W - 0.005, 1.6, 2.65, M.oak);
-  B(W - 0.027, 1.18, 2.33, W - 0.025, 1.57, 2.62, new THREE.MeshStandardMaterial({ color: '#cfd8cf', roughness: 0.9 }));
+  cyl(W - 0.26, 2.2, 1.5, 0.003, 1.0, M.black);
+  const shade = new THREE.Mesh(new THREE.SphereGeometry(0.14, 32, 16, 0, 7, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#173f33', roughness: 0.4, side: THREE.DoubleSide }));
+  shade.position.set(W - 0.26, 1.62, 1.5); shade.castShadow = true; groups.furn.add(shade);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.033, 16, 12), M.bulb); bulb.position.set(W - 0.26, 1.6, 1.5); groups.furn.add(bulb);
+  cyl(W - 0.22, 0.83, 1.62, 0.09, 0.1, M.ceramic, { rTop: 0.12 });
+  [[0, 0], [0.05, 0.03], [-0.04, 0.04]].forEach(([dx, dz], i) => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.033, 16, 12), new THREE.MeshStandardMaterial({ color: ['#d18a3b', '#9db04a', '#d6b443'][i], roughness: 0.5 })); s.position.set(W - 0.22 + dx, 0.88, 1.62 + dz); groups.furn.add(s); });
 }
 
 /* ---------- Salon sous mezzanine ---------- */
 {
-  // banquette-lit (format couchage 140 × 190 une fois dépliée)
-  const z0 = 3.3, z1 = 5.25;
-  B(0.06, 0, z0 + 0.04, 0.12, 0.12, z0 + 0.1, M.black); B(0.06, 0, z1 - 0.1, 0.12, 0.12, z1 - 0.04, M.black);
-  B(0.8, 0, z0 + 0.04, 0.86, 0.12, z0 + 0.1, M.black); B(0.8, 0, z1 - 0.1, 0.86, 0.12, z1 - 0.04, M.black);
-  RB(0.03, 0.12, z0, 0.92, 0.3, z1, 0.03, M.fabric);
-  RB(0.25, 0.29, z0 + 0.02, 0.93, 0.46, z1 - 0.02, 0.07, M.fabric);
-  const back = RB(0.04, 0.3, z0 + 0.02, 0.3, 0.9, z1 - 0.02, 0.08, M.fabric); back.rotation.z = -0.1;
-  // coussins
-  const cush = (z, mat, s = 0.45, tilt = 0.25) => { const c = RB(0, 0, 0, 0.16, s, s, 0.07, mat); c.position.set(0.33, 0.69, z); c.rotation.set(0.05, 0, -tilt); };
-  cush(3.6, M.velvet); cush(4.05, M.sage, 0.42, 0.3); cush(4.95, M.velvet); cush(4.55, M.ochre, 0.36, 0.2);
-  // plaid
-  const plaid = RB(0.35, 0.455, 4.2, 0.92, 0.48, 4.75, 0.01, M.sage); plaid.rotation.y = 0.05;
-  // rangements chêne au-dessus
-  const UY0 = 1.6, UY1 = 2.15;
+  // banquette-lit avec 2 grands tiroirs de rangement dessous
+  const z0 = 3.1, z1 = 5.05;
+  B(0.02, 0, z0, 0.9, 0.04, z1, M.black);
+  B(0.02, 0.04, z0, 0.88, 0.27, z1, M.greenDark);
+  const mz = (z0 + z1) / 2;
+  B(0.88, 0.045, z0 + 0.01, 0.9, 0.265, mz - 0.005, M.green); B(0.88, 0.045, mz + 0.005, 0.9, 0.265, z1 - 0.01, M.green);
+  [(z0 + mz) / 2, (mz + z1) / 2].forEach(z => B(0.9, 0.2, z - 0.12, 0.915, 0.21, z + 0.12, M.brass));
+  RB(0.02, 0.27, z0, 0.92, 0.45, z1, 0.05, M.fabric);
+  const back = RB(0.03, 0.42, z0 + 0.02, 0.28, 0.95, z1 - 0.02, 0.08, M.fabric); back.rotation.z = -0.08;
+  const cush = (z, mat, s = 0.45, tilt = 0.25) => { const c = RB(0, 0, 0, 0.16, s, s, 0.07, mat); c.position.set(0.34, 0.72, z); c.rotation.set(0.05, 0, -tilt); };
+  cush(3.4, M.velvet); cush(3.85, M.sage, 0.42, 0.3); cush(4.75, M.velvet); cush(4.33, M.ochre, 0.36, 0.2);
+  RB(0.4, 0.45, 3.95, 0.92, 0.475, 4.5, 0.01, M.sage).rotation.y = 0.05;
+  // rangements chêne au-dessus de la banquette (remplacent les cubes blancs)
+  const UY0 = 1.6, UY1 = 2.2;
   B(0, UY0, z0, 0.36, UY1, z1, M.oak);
   for (let i = 0; i < 4; i++) {
     const a = z0 + i * (z1 - z0) / 4, b = a + (z1 - z0) / 4;
-    B(0.36, UY0 + 0.005, a + 0.003, 0.38, UY1 - 0.005, b - 0.003, i % 3 === 0 ? M.oak : M.oak);
+    B(0.36, UY0 + 0.005, a + 0.003, 0.38, UY1 - 0.005, b - 0.003, M.oak);
     B(0.38, UY0 + 0.02, (a + b) / 2 - 0.08, 0.395, UY0 + 0.03, (a + b) / 2 + 0.08, M.brass);
   }
   B(0.02, UY0 - 0.01, z0 + 0.03, 0.3, UY0 - 0.002, z1 - 0.03, M.led, { cast: false });
-  // liseuses laiton
-  [3.18, 5.4].forEach(z => { cyl(0.03, 1.15, z, 0.03, 0.04, M.brass, { rot: [0, 0, Math.PI / 2] }); cyl(0.12, 1.15, z, 0.006, 0.18, M.brass, { rot: [0, 0, Math.PI / 2] }); const s = cyl(0.2, 1.1, z, 0.06, 0.1, M.brass, { rTop: 0.03 }); s.material = M.brass; });
-  // tapis
-  B(1.05, 0, 3.55, 2.15, 0.012, 5.1, M.rug, { meters: false });
-  // console TV vert sapin flottante + TV
-  B(W - 0.32, 0.38, 4.35, W, 0.56, 5.35, M.green);
-  B(W - 0.33, 0.56, 4.35, W, 0.585, 5.35, M.oak);
-  B(W - 0.04, 1.05, 4.38, W - 0.01, 1.62, 5.32, M.screen);
-  B(W - 0.042, 1.07, 4.40, W - 0.04, 1.6, 5.30, new THREE.MeshStandardMaterial({ color: '#06110d', roughness: 0.05, metalness: 0.6 }));
-  // déco console
-  cyl(W - 0.15, 0.68, 5.15, 0.05, 0.19, M.ceramic, { rTop: 0.035 });
-  RB(W - 0.25, 0.585, 4.5, W - 0.05, 0.63, 4.75, 0.01, M.sage);
-  // radiateur
-  B(1.62, 0.15, L - 0.07, 2.22, 0.75, L - 0.01, M.white);
-  for (let i = 0; i < 12; i++) B(1.65 + i * 0.047, 0.18, L - 0.075, 1.67 + i * 0.047, 0.72, L - 0.07, M.white);
-  // plante
-  cyl(0.38, 0.17, L - 0.28, 0.13, 0.34, M.pot, { rTop: 0.16 });
-  for (let i = 0; i < 16; i++) {
-    const g = new THREE.SphereGeometry(0.12, 12, 8); const lf = new THREE.Mesh(g, M.leaf);
-    const a = rnd() * 6.28, h = 0.55 + rnd() * 0.7; lf.scale.set(1, 0.08, 0.55);
-    lf.position.set(0.38 + Math.cos(a) * 0.17, h, L - 0.28 + Math.sin(a) * 0.17); lf.rotation.set(rnd() * 0.6, -a, 0.5 + rnd() * 0.5); lf.castShadow = true; groups.furn.add(lf);
-    cyl(0.38 + Math.cos(a) * 0.08, h / 2 + 0.17, L - 0.28 + Math.sin(a) * 0.08, 0.006, h - 0.15, new THREE.MeshStandardMaterial({ color: '#3d5a2c' }));
+  // liseuse laiton côté tête de lit
+  cyl(0.03, 1.2, z0 - 0.12, 0.03, 0.04, M.brass, { rot: [0, 0, Math.PI / 2] });
+  cyl(0.12, 1.2, z0 - 0.12, 0.006, 0.18, M.brass, { rot: [0, 0, Math.PI / 2] });
+  cyl(0.2, 1.15, z0 - 0.12, 0.06, 0.1, M.brass, { rTop: 0.03 });
+  // petit meuble bas vert sapin au pied de la banquette + plante
+  B(0.02, 0.0, z1 + 0.08, 0.88, 0.06, L - 0.02, M.black);
+  B(0.02, 0.06, z1 + 0.08, 0.86, 0.5, L - 0.02, M.greenDark);
+  B(0.86, 0.065, z1 + 0.085, 0.88, 0.495, L - 0.025, M.green);
+  B(0.88, 0.42, (z1 + L) / 2 - 0.08, 0.895, 0.43, (z1 + L) / 2 + 0.08, M.brass);
+  B(0.0, 0.5, z1 + 0.06, 0.9, 0.53, L, M.oak);
+  cyl(0.72, 0.62, z1 + 0.35, 0.07, 0.18, M.pot, { rTop: 0.085 });
+  for (let i = 0; i < 9; i++) {
+    const lf = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), M.leaf);
+    const a = rnd() * 6.28; lf.scale.set(1, 0.1, 0.5);
+    lf.position.set(0.72 + Math.cos(a) * 0.07, 0.8 + rnd() * 0.15, z1 + 0.35 + Math.sin(a) * 0.07); lf.rotation.set(rnd() * 0.6, -a, 0.5 + rnd() * 0.5); lf.castShadow = true; groups.furn.add(lf);
   }
-  // porte-fenêtre verre dépoli (mur du fond)
-  const x0 = 0.75, x1 = 1.55, f = 0.06;
+  // TV à droite de la porte-fenêtre, sur bras articulé, visible depuis la banquette
+  const tvx = 0.62, tvy = 1.25, tvz = L - 0.2;
+  B(tvx - 0.06, tvy - 0.08, L - 0.02, tvx + 0.06, tvy + 0.08, L, M.black);
+  B(tvx - 0.015, tvy - 0.015, L - 0.17, tvx + 0.015, tvy + 0.015, L - 0.02, M.black);
+  const tv = new THREE.Group();
+  const frameTv = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.44, 0.035), M.screen); frameTv.castShadow = true;
+  const glassTv = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.41), new THREE.MeshStandardMaterial({ color: '#06110d', roughness: 0.05, metalness: 0.6 }));
+  glassTv.position.z = -0.0181; glassTv.rotation.y = Math.PI;
+  tv.add(frameTv, glassTv); tv.position.set(tvx, tvy, tvz); tv.rotation.y = 0.18; groups.furn.add(tv);
+  // radiateur remplacé : radiateur vertical design vert sapin
+  for (let i = 0; i < 6; i++) B(W - 0.06, 0.15, 4.98 + i * 0.07, W - 0.01, 1.75, 5.03 + i * 0.07, M.green);
+  B(W - 0.05, 0.2, 4.98, W - 0.02, 0.23, 5.38, M.green); B(W - 0.05, 1.67, 4.98, W - 0.02, 1.7, 5.38, M.green);
+  // tapis
+  B(1.0, 0, 3.25, 1.95, 0.012, 4.85, M.rug, { meters: false });
+  // porte-fenêtre verre dépoli, presque contre le mur de gauche
+  const x0 = PF0, x1 = PF1, f = 0.06, xm = (x0 + x1) / 2;
   B(x0, 0.0, L + 0.03, x1, 0.95, L + 0.06, M.white);
-  B(x0 + f, 1.0, L + 0.06, (x0 + x1) / 2 - 0.025, 2.06, L + 0.065, M.frosted, { cast: false });
-  B((x0 + x1) / 2 + 0.025, 1.0, L + 0.06, x1 - f, 2.06, L + 0.065, M.frosted, { cast: false });
-  [[x0, x0 + f], [x1 - f, x1], [(x0 + x1) / 2 - 0.025, (x0 + x1) / 2 + 0.025]].forEach(([a, b]) => B(a, 0.95, L + 0.02, b, 2.12, L + 0.06, M.frame));
+  B(x0 + f, 1.0, L + 0.06, xm - 0.025, 2.06, L + 0.065, M.frosted, { cast: false });
+  B(xm + 0.025, 1.0, L + 0.06, x1 - f, 2.06, L + 0.065, M.frosted, { cast: false });
+  [[x0, x0 + f], [x1 - f, x1], [xm - 0.025, xm + 0.025]].forEach(([a, b]) => B(a, 0.95, L + 0.02, b, 2.12, L + 0.06, M.frame));
   [[0.95, 1.0], [2.06, 2.12]].forEach(([a, b]) => B(x0, a, L + 0.02, x1, b, L + 0.06, M.frame));
-  B((x0 + x1) / 2 + 0.04, 1.05, L + 0.0, (x0 + x1) / 2 + 0.06, 1.2, L + 0.02, M.black);
-  // spots encastrés mezzanine
-  [[1.2, 3.6], [1.2, 4.9]].forEach(([x, z]) => cyl(x, HM - 0.002, z, 0.04, 0.004, M.bulb, { group: groups.ceil }));
+  B(xm - 0.06, 1.05, L + 0.0, xm - 0.04, 1.2, L + 0.02, M.black);
+  [[1.1, 3.5], [1.1, 4.8]].forEach(([x, z]) => cyl(x, HM - 0.002, z, 0.04, 0.004, M.bulb, { group: groups.ceil }));
 }
 
-/* ---------- Salle d'eau ---------- */
+/* ---------- Salle d'eau : douche à gauche, vasque au fond, WC à droite ---------- */
 {
-  // porte coulissante chêne (ouverte)
-  B(W - 0.08, 0, 2.7, W - 0.04, 2.05, 3.42, M.oakV);
-  B(W - 0.1, 2.08, 2.6, W - 0.03, 2.12, 4.2, M.black);
-  B(W - 0.1, 0.95, 3.3, W - 0.08, 1.15, 3.32, M.black);
-  // douche à l'italienne (coin du fond)
-  const sx0 = B1 - 0.85, sz0 = BZ1 - 0.85;
-  B(B1 - 0.012, 0, sz0 - 0.02, B1, 2.0, BZ1, M.zelG);
-  B(sx0 - 0.02, 0, BZ1 - 0.012, B1, 2.0, BZ1, M.zelG);
+  // porte coulissante chêne (ouverte, glissée côté cuisine)
+  B(W - 0.06, 0, BD0 - 0.72, W - 0.02, 2.05, BD0 + 0.02, M.oakV);
+  B(W - 0.08, 2.08, BD0 - 0.8, W - 0.01, 2.12, BD1 + 0.05, M.black);
+  B(W - 0.085, 0.95, BD0 - 0.1, W - 0.06, 1.15, BD0 - 0.08, M.black);
+  // douche (coin gauche du fond)
+  const sx0 = B1 - 0.85, sz1 = BZ0 + 0.88;
+  B(B1 - 0.012, 0, BZ0, B1, 2.0, sz1 + 0.02, M.zelG);
+  B(sx0 - 0.02, 0, BZ0, B1, 2.0, BZ0 + 0.012, M.zelG);
   zelG.repeat.set(1 / 0.8, 1 / 0.8); tileBumpG.repeat.copy(zelG.repeat);
-  B(sx0, 0, sz0, B1, 0.012, BZ1, M.terrazzo, { meters: true });
-  B(sx0 + 0.3, 0.012, BZ1 - 0.12, B1 - 0.05, 0.014, BZ1 - 0.06, M.steel);
-  B(sx0, 0.0, sz0 - 0.01, sx0 + 0.55, 1.95, sz0 + 0.0, M.glass, { cast: false });
-  B(sx0, 1.94, sz0 - 0.015, sx0 + 0.55, 1.95, sz0 + 0.005, M.black);
-  B(sx0 - 0.005, 0, sz0 - 0.015, sx0 + 0.005, 1.95, sz0 + 0.005, M.black);
-  cyl(B1 - 0.04, 1.6, BZ1 - 0.35, 0.012, 1.0, M.black);
-  cyl(B1 - 0.2, 2.1, BZ1 - 0.35, 0.11, 0.012, M.black);
-  B(B1 - 0.2, 2.1, BZ1 - 0.36, B1 - 0.03, 2.115, BZ1 - 0.34, M.black);
-  B(B1 - 0.03, 1.05, BZ1 - 0.42, B1, 1.2, BZ1 - 0.28, M.black);
-  // WC suspendu (mur du fond)
-  const wz = 3.22;
-  const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 20), M.ceramic);
-  bowl.scale.set(1.3, 0.75, 0.9); bowl.position.set(B1 - 0.27, 0.36, wz); bowl.castShadow = true; groups.furn.add(bowl);
-  B(B1 - 0.36, 0.38, wz - 0.17, B1 - 0.02, 0.42, wz + 0.17, M.ceramic);
-  B(B1 - 0.012, 0.95, wz - 0.1, B1, 1.1, wz + 0.1, M.black);
-  // fenêtre de la salle d'eau
-  B(B1 - 0.04, 1.55, 3.0, B1 - 0.03, 1.95, 3.42, M.frosted, { cast: false });
-  // meuble vasque
-  const vx0 = W + 0.12, vx1 = W + 0.72;
-  B(vx0, 0.45, BZ0, vx1, 0.82, BZ0 + 0.42, M.green);
-  B(vx0, 0.82, BZ0, vx1, 0.85, BZ0 + 0.44, M.oak);
-  B((vx0 + vx1) / 2 - 0.1, 0.78, BZ0 + 0.425, (vx0 + vx1) / 2 + 0.1, 0.79, BZ0 + 0.44, M.brass);
-  cyl((vx0 + vx1) / 2, 0.9, BZ0 + 0.22, 0.17, 0.1, M.ceramic, { rTop: 0.19, seg: 48 });
-  const inner = cyl((vx0 + vx1) / 2, 0.951, BZ0 + 0.22, 0.165, 0.002, new THREE.MeshStandardMaterial({ color: '#e5e3dd', roughness: 0.2 }), { seg: 48 });
-  const bt = new THREE.CatmullRomCurve3([new THREE.Vector3((vx0 + vx1) / 2, 0.85, BZ0 + 0.03), new THREE.Vector3((vx0 + vx1) / 2, 1.12, BZ0 + 0.03), new THREE.Vector3((vx0 + vx1) / 2, 1.14, BZ0 + 0.12)]);
-  const btap = new THREE.Mesh(new THREE.TubeGeometry(bt, 20, 0.011, 10), M.black); groups.furn.add(btap);
-  // miroir rond rétroéclairé
-  cyl((vx0 + vx1) / 2, 1.5, BZ0 + 0.025, 0.27, 0.01, M.led, { rot: [Math.PI / 2, 0, 0] });
-  cyl((vx0 + vx1) / 2, 1.5, BZ0 + 0.035, 0.26, 0.012, new THREE.MeshStandardMaterial({ map: mirrorTex, emissive: '#ffffff', emissiveMap: mirrorTex, emissiveIntensity: 0.35, metalness: 0.2, roughness: 0.05 }), { rot: [Math.PI / 2, 0, 0] });
-  // serviettes
-  B(W + 0.85, 1.0, BZ0, W + 1.15, 1.02, BZ0 + 0.05, M.brass);
-  RB(W + 0.87, 0.62, BZ0 + 0.04, W + 1.13, 1.03, BZ0 + 0.08, 0.015, M.sage);
+  B(sx0, 0, BZ0, B1, 0.012, sz1, M.terrazzo);
+  B(sx0 + 0.06, 0.012, BZ0 + 0.08, sx0 + 0.12, 0.014, sz1 - 0.08, M.steel);
+  B(B1 - 0.6, 0, sz1, B1, 1.95, sz1 + 0.01, M.glass, { cast: false });
+  B(B1 - 0.6, 1.94, sz1 - 0.005, B1, 1.95, sz1 + 0.015, M.black);
+  B(B1 - 0.605, 0, sz1 - 0.005, B1 - 0.595, 1.95, sz1 + 0.015, M.black);
+  cyl(B1 - 0.04, 1.6, BZ0 + 0.4, 0.012, 1.0, M.black);
+  cyl(B1 - 0.2, 2.1, BZ0 + 0.4, 0.11, 0.012, M.black);
+  B(B1 - 0.2, 2.1, BZ0 + 0.39, B1 - 0.03, 2.115, BZ0 + 0.41, M.black);
+  B(B1 - 0.03, 1.05, BZ0 + 0.33, B1, 1.2, BZ0 + 0.47, M.black);
+  B(B1 - 0.1, 1.25, BZ0 + 0.6, B1, 1.27, BZ0 + 0.84, M.oak); // niche savon
+  // vasque au fond, au centre, meuble suspendu + armoire de toilette
+  const vz0 = sz1 + 0.05, vz1 = vz0 + 0.5, vm = (vz0 + vz1) / 2;
+  B(B1 - 0.42, 0.45, vz0, B1, 0.82, vz1, M.green);
+  B(B1 - 0.44, 0.82, vz0, B1, 0.85, vz1, M.oak);
+  B(B1 - 0.435, 0.78, vm - 0.1, B1 - 0.42, 0.79, vm + 0.1, M.brass);
+  cyl(B1 - 0.22, 0.9, vm, 0.14, 0.1, M.ceramic, { rTop: 0.16, seg: 48 });
+  cyl(B1 - 0.22, 0.951, vm, 0.135, 0.002, new THREE.MeshStandardMaterial({ color: '#e5e3dd', roughness: 0.2 }), { seg: 48 });
+  const bt = new THREE.CatmullRomCurve3([new THREE.Vector3(B1 - 0.03, 1.12, vm), new THREE.Vector3(B1 - 0.1, 1.13, vm), new THREE.Vector3(B1 - 0.14, 1.1, vm)]);
+  groups.furn.add(new THREE.Mesh(new THREE.TubeGeometry(bt, 20, 0.011, 10), M.black));
+  B(B1 - 0.16, 1.25, vz0 + 0.02, B1, 1.95, vz1 - 0.02, M.greenDark);           // armoire de toilette
+  B(B1 - 0.165, 1.26, vz0 + 0.03, B1 - 0.16, 1.94, vm - 0.003, new THREE.MeshStandardMaterial({ map: mirrorTex, emissive: '#ffffff', emissiveMap: mirrorTex, emissiveIntensity: 0.35, roughness: 0.05 }));
+  B(B1 - 0.165, 1.26, vm + 0.003, B1 - 0.16, 1.94, vz1 - 0.03, new THREE.MeshStandardMaterial({ map: mirrorTex, emissive: '#ffffff', emissiveMap: mirrorTex, emissiveIntensity: 0.35, roughness: 0.05 }));
+  B(B1 - 0.16, 1.235, vz0 + 0.04, B1 - 0.02, 1.25, vz1 - 0.04, M.led, { cast: false });
+  // WC suspendu, coin droit
+  const wz = BZ1 - 0.26;
+  B(B1 - 0.2, 0, wz - 0.22, B1, 1.1, BZ1, M.wall);                         // bâti-support coffré
+  B(B1 - 0.2, 1.1, wz - 0.22, B1, 1.13, BZ1, M.oak);
+  const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.19, 32, 20), M.ceramic);
+  bowl.scale.set(1.35, 0.6, 0.9); bowl.position.set(B1 - 0.43, 0.34, wz); bowl.castShadow = true; groups.furn.add(bowl);
+  RB(B1 - 0.66, 0.44, wz - 0.17, B1 - 0.2, 0.475, wz + 0.17, 0.015, M.ceramic);
+  B(B1 - 0.205, 0.85, wz - 0.1, B1 - 0.2, 1.0, wz + 0.1, M.black);
+  // placards au-dessus des WC
+  B(B1 - 0.32, 1.75, wz - 0.22, B1, HM - 0.02, BZ1, M.greenDark);
+  B(B1 - 0.34, 1.755, wz - 0.217, B1 - 0.32, HM - 0.025, BZ1 - 0.003, M.green);
+  B(B1 - 0.355, 1.78, wz - 0.18, B1 - 0.34, 1.92, wz - 0.168, M.brass);
+  // fenêtre de la salle d'eau (à droite des WC)
+  B(2.95, 1.65, BZ1 + 0.03, 3.3, 2.0, BZ1 + 0.04, M.frosted, { cast: false });
+  // porte-serviettes
+  B(B0 + 0.05, 1.05, BZ1 - 0.04, B0 + 0.55, 1.07, BZ1, M.brass);
+  RB(B0 + 0.07, 0.7, BZ1 - 0.07, B0 + 0.53, 1.08, BZ1 - 0.03, 0.015, M.sage);
 }
 
 /* ---------- Lumières ---------- */
 const lights = [];
 scene.add(new THREE.HemisphereLight('#f4f1ea', '#5a4a38', 0.22));
-// lumière du jour fenêtre
-const winLight = new THREE.RectAreaLight('#e9f1f2', 9, 0.8, 1.45); winLight.position.set(1.38, 1.68, 0.02); winLight.lookAt(1.38, 1.4, 3); scene.add(winLight);
-const sun = new THREE.SpotLight('#fff3e0', 22, 9, 0.5, 0.9, 1.6); sun.position.set(1.7, 3.6, -2.4); sun.target.position.set(1.2, 0, 2.2);
+const winLight = new THREE.RectAreaLight('#e9f1f2', 9, 0.75, 1.45); winLight.position.set(1.33, 1.68, 0.02); winLight.lookAt(1.33, 1.4, 3); scene.add(winLight);
+const sun = new THREE.SpotLight('#fff3e0', 22, 9, 0.5, 0.9, 1.6); sun.position.set(1.6, 3.6, -2.4); sun.target.position.set(1.1, 0, 2.2);
 sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -0.0004; sun.shadow.radius = 4; scene.add(sun, sun.target);
-// porte-fenêtre dépolie
-const doorLight = new THREE.RectAreaLight('#fff6e8', 6, 0.7, 1.05); doorLight.position.set(1.15, 1.55, L - 0.01); doorLight.lookAt(1.15, 1.4, 0); scene.add(doorLight);
-// spots cuisine (blanc chaud 3000K)
+const doorLight = new THREE.RectAreaLight('#fff6e8', 6, 0.65, 1.05); doorLight.position.set((PF0 + PF1) / 2, 1.55, L - 0.01); doorLight.lookAt((PF0 + PF1) / 2, 1.4, 0); scene.add(doorLight);
 function spot(x, y, z, tx, tz, intensity, shadow = true, angle = 0.75) {
   const s = new THREE.SpotLight('#ffd9a8', intensity, 6, angle, 0.7, 2);
   s.position.set(x, y, z); s.target.position.set(tx, 0, tz);
@@ -630,27 +666,20 @@ function spot(x, y, z, tx, tz, intensity, shadow = true, angle = 0.75) {
   cyl(x, y - 0.002, z, 0.04, 0.004, M.bulb, { group: groups.ceil });
   return s;
 }
-spot(1.2, H - 0.01, 1.0, 1.0, 1.1, 9);
-spot(1.2, H - 0.01, 2.2, 1.0, 2.3, 9);
-spot(1.25, HM - 0.01, 3.6, 0.8, 3.8, 6, true, 0.8);
-spot(1.25, HM - 0.01, 4.9, 0.8, 5.0, 6, false, 0.8);
-// LED sous meubles hauts cuisine
-const under = new THREE.RectAreaLight('#ffd7a3', 11, 1.75, 0.22); under.position.set(0.17, 1.5, 1.8); under.rotation.set(-Math.PI / 2, 0, Math.PI / 2); scene.add(under);
-// LED sous rangements salon
-const under2 = new THREE.RectAreaLight('#ffd7a3', 10, 1.9, 0.26); under2.position.set(0.16, 1.58, 4.27); under2.rotation.set(-Math.PI / 2, 0, Math.PI / 2); scene.add(under2);
-// LED rasante mezzanine
-const cove = new THREE.RectAreaLight('#ffd7a3', 5, 2.2, 0.05); cove.position.set(W / 2, HM - 0.04, ZM + 0.04); cove.rotation.set(-Math.PI / 2, 0, 0); scene.add(cove);
-// suspension
-const pend = new THREE.PointLight('#ffcf94', 2.2, 4, 2); pend.position.set(W - 0.32, 1.5, 1.72); pend.castShadow = true; pend.shadow.mapSize.set(512, 512); pend.shadow.bias = -0.002; scene.add(pend);
-// liseuses
-[3.18, 5.4].forEach(z => { const p = new THREE.PointLight('#ffcf94', 0.5, 2, 2); p.position.set(0.2, 1.05, z); scene.add(p); });
-// salle d'eau
-const bathSpot = new THREE.SpotLight('#fff0dc', 7, 4, 0.9, 0.7, 2); bathSpot.position.set(W + 0.75, HM - 0.02, 3.65); bathSpot.target.position.set(W + 0.75, 0, 3.7);
+spot(1.05, H - 0.01, 0.95, 0.9, 1.05, 9);
+spot(1.05, H - 0.01, 2.1, 0.9, 2.2, 9);
+spot(1.15, HM - 0.01, 3.5, 0.8, 3.7, 6, true, 0.8);
+spot(1.15, HM - 0.01, 4.8, 0.8, 4.9, 6, false, 0.8);
+const under = new THREE.RectAreaLight('#ffd7a3', 9, 1.15, 0.22); under.position.set(0.17, 1.47, 2.1); under.rotation.set(-Math.PI / 2, 0, Math.PI / 2); scene.add(under);
+const under2 = new THREE.RectAreaLight('#ffd7a3', 10, 1.9, 0.26); under2.position.set(0.16, 1.58, 4.07); under2.rotation.set(-Math.PI / 2, 0, Math.PI / 2); scene.add(under2);
+const cove = new THREE.RectAreaLight('#ffd7a3', 5, 1.9, 0.05); cove.position.set(W / 2, HM - 0.04, ZM + 0.04); cove.rotation.set(-Math.PI / 2, 0, 0); scene.add(cove);
+const pend = new THREE.PointLight('#ffcf94', 2.0, 4, 2); pend.position.set(W - 0.26, 1.57, 1.5); pend.castShadow = true; pend.shadow.mapSize.set(512, 512); pend.shadow.bias = -0.002; scene.add(pend);
+{ const p = new THREE.PointLight('#ffcf94', 0.5, 2, 2); p.position.set(0.2, 1.1, 2.98); scene.add(p); }
+const bathSpot = new THREE.SpotLight('#fff0dc', 7, 4, 0.95, 0.7, 2); bathSpot.position.set(B0 + 0.55, HM - 0.02, 3.85); bathSpot.target.position.set(B0 + 0.6, 0, 3.9);
 bathSpot.castShadow = true; bathSpot.shadow.mapSize.set(512, 512); bathSpot.shadow.bias = -0.0005; scene.add(bathSpot, bathSpot.target);
-cyl(W + 0.75, HM - 0.002, 3.65, 0.04, 0.004, M.bulb, { group: groups.ceil });
-const mirrorL = new THREE.RectAreaLight('#ffe6c4', 6, 0.5, 0.5); mirrorL.position.set(W + 0.42, 1.5, BZ0 + 0.05); mirrorL.lookAt(W + 0.42, 1.4, 4); scene.add(mirrorL);
-const bathWin = new THREE.RectAreaLight('#eef3f2', 4, 0.4, 0.4); bathWin.position.set(B1 - 0.05, 1.75, 3.21); bathWin.lookAt(0, 1.6, 3.21); scene.add(bathWin);
-// placard
+cyl(B0 + 0.55, HM - 0.002, 3.85, 0.04, 0.004, M.bulb, { group: groups.ceil });
+const mirrorL = new THREE.RectAreaLight('#ffe6c4', 6, 0.5, 0.5); mirrorL.position.set(B1 - 0.18, 1.6, BZ0 + 1.24); mirrorL.lookAt(0, 1.5, BZ0 + 1.24); scene.add(mirrorL);
+const bathWin = new THREE.RectAreaLight('#eef3f2', 4, 0.35, 0.35); bathWin.position.set(3.12, 1.82, BZ1 - 0.02); bathWin.lookAt(3.12, 1.6, 0); scene.add(bathWin);
 const closetL = new THREE.PointLight('#ffe2b8', 0.8, 2, 2); closetL.position.set(0.42, 2.4, -0.45); scene.add(closetL);
 
 /* ---------- Étiquettes de cotes (maquette) ---------- */
@@ -663,13 +692,15 @@ function label(text, x, y, z, scale = 0.5) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false }));
   s.position.set(x, y, z); s.scale.set(scale, scale / 4, 1); s.renderOrder = 10; groups.labels.add(s);
 }
-label('2,35 m', W / 2, 3.1, -0.35, 0.9);
-label('5,65 m', -0.5, 3.1, L / 2, 0.9);
-label('Cuisine 1,80 m', 0.6, 3.0, 1.8, 1.0);
-label('Banquette-lit', 0.6, 3.0, 4.3, 0.95);
-label("Salle d'eau 1,40 × 1,40", W + 0.8, 3.0, 3.65, 1.2);
+label('2,05 m', W / 2, 3.1, -0.35, 0.9);
+label('5,75 m', -0.5, 3.1, L / 2, 0.9);
+label('Frigo vintage', 0.35, 3.0, 1.15, 0.9);
+label('Cuisine', 0.35, 3.0, 2.1, 0.7);
+label('Banquette-lit', 0.5, 3.0, 4.1, 0.95);
+label('TV', 0.62, 3.0, L - 0.25, 0.4);
+label("Salle d'eau 1,35 × 1,95", B0 + 0.7, 3.0, (BZ0 + BZ1) / 2, 1.2);
 label('Placard', 0.42, 3.0, -0.45, 0.7);
-label('Repas', W - 0.5, 3.0, 1.7, 0.6);
+label('Repas', W - 0.4, 3.0, 1.5, 0.6);
 groups.labels.visible = false;
 
 /* ---------- Post-traitement ---------- */
@@ -695,20 +726,20 @@ addEventListener('resize', resize); resize();
 /* ---------- Trajet de la visite (reprend la vidéo) ---------- */
 const EYE = 1.6;
 const keys = [
-  [0, [1.75, EYE, 3.55], [0.45, 1.05, 1.45]],     // vue cuisine
-  [4, [1.6, EYE, 3.25], [1.0, 1.3, 0.0]],         // fenêtre
-  [7.5, [1.45, EYE, 2.7], [0.25, 0.95, 1.8]],      // plan de travail
-  [11, [1.35, EYE, 2.3], [2.3, 1.0, 1.0]],        // entrée + table
-  [15, [1.25, EYE, 2.2], [1.1, 1.1, 5.6]],        // demi-tour vers le salon
-  [19, [1.65, EYE, 3.45], [0.2, 0.75, 4.5]],      // banquette-lit
-  [23, [1.5, EYE, 3.7], [1.4, 1.1, 5.65]],        // porte-fenêtre / TV
-  [26, [1.85, EYE, 3.8], [3.2, 1.25, 3.8]],       // porte salle d'eau
-  [29, [2.62, EYE, 3.82], [3.6, 1.0, 4.15]],      // douche
-  [32, [2.75, EYE, 3.9], [2.75, 1.05, 2.95]],     // vasque
-  [34.5, [3.0, EYE, 3.75], [3.75, 0.8, 3.2]],     // WC / fenêtre
-  [37.5, [1.9, EYE, 3.8], [1.0, 1.4, 0.3]],       // ressortir
-  [41, [1.35, EYE, 1.0], [0.4, 1.0, -0.6]],       // placard technique
-  [44, [1.7, 1.66, 4.95], [0.9, 1.15, 0.6]],      // vue d'ensemble finale
+  [0, [1.55, EYE, 3.4], [0.4, 1.0, 1.4]],         // vue cuisine
+  [4, [1.4, EYE, 3.0], [0.9, 1.3, 0.0]],          // fenêtre
+  [7.5, [1.25, EYE, 2.45], [0.2, 0.95, 1.1]],     // frigo vintage + plan de travail
+  [11, [1.15, EYE, 2.3], [2.05, 1.05, 0.9]],      // entrée + table
+  [15, [1.1, EYE, 2.1], [1.3, 1.1, 5.7]],         // demi-tour vers le salon
+  [19, [1.5, EYE, 3.15], [0.2, 0.75, 4.3]],       // banquette-lit
+  [23, [1.45, EYE, 3.4], [0.95, 1.15, 5.75]],     // TV + porte-fenêtre
+  [26, [1.55, EYE, 3.9], [3.0, 1.2, 3.9]],        // porte salle d'eau
+  [29, [2.45, EYE, 3.95], [3.35, 0.95, 3.25]],    // douche à gauche
+  [32, [2.4, EYE, 3.95], [3.48, 1.15, 4.05]],     // vasque au fond
+  [34.5, [2.5, EYE, 3.95], [3.25, 0.75, 4.6]],    // WC à droite
+  [37.5, [1.55, EYE, 3.9], [0.9, 1.4, 0.3]],      // ressortir
+  [41, [1.2, EYE, 0.95], [0.35, 1.0, -0.6]],      // placard technique
+  [44, [1.5, 1.66, 5.05], [0.85, 1.15, 0.6]],     // vue d'ensemble finale
 ];
 const TOUR = keys[keys.length - 1][0];
 const v3 = a => new THREE.Vector3(...a);
@@ -735,14 +766,14 @@ function poseAt(t) {
 let mode = 'tour', tourT = 0, last = performance.now();
 let yaw = 0, pitch = 0;
 const orbit = new OrbitControls(camera, renderer.domElement);
-orbit.enabled = false; orbit.target.set(W / 2 + 0.4, 0.6, L / 2 - 0.3); orbit.enableDamping = true; orbit.maxPolarAngle = Math.PI * 0.47; orbit.minDistance = 3; orbit.maxDistance = 14;
+orbit.enabled = false; orbit.target.set(W / 2 + 0.5, 0.6, L / 2 - 0.3); orbit.enableDamping = true; orbit.maxPolarAngle = Math.PI * 0.47; orbit.minDistance = 3; orbit.maxDistance = 14;
 const ui = {
   tour: document.getElementById('bTour'), walk: document.getElementById('bWalk'), plan: document.getElementById('bPlan'),
   prog: document.querySelector('#prog i'), hint: document.getElementById('hint'), joy: document.getElementById('joy'),
 };
 function syncYawPitch() { const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ'); yaw = e.y; pitch = e.x; }
 function setMode(m) {
-  if (mode === 'plan' && m !== 'plan') { camera.position.set(1.3, EYE, 2.4); yaw = Math.PI; pitch = -0.1; }
+  if (mode === 'plan' && m !== 'plan') { camera.position.set(1.15, EYE, 2.4); yaw = Math.PI; pitch = -0.1; }
   mode = m;
   ui.tour.setAttribute('aria-pressed', m === 'tour'); ui.walk.setAttribute('aria-pressed', m === 'walk'); ui.plan.setAttribute('aria-pressed', m === 'plan');
   ui.tour.textContent = m === 'tour' ? '❚❚ Pause' : '▶ Visite';
@@ -759,8 +790,8 @@ ui.tour.onclick = () => { if (mode === 'tour') setMode('walk'); else { if (tourT
 ui.walk.onclick = () => setMode('walk');
 ui.plan.onclick = () => setMode(mode === 'plan' ? 'walk' : 'plan');
 const spots = {
-  cuisine: [[1.75, EYE, 3.3], [0.4, 1.1, 1.6]], salon: [[1.9, EYE, 2.9], [0.3, 0.8, 4.6]],
-  sdb: [[2.6, EYE, 3.8], [3.6, 1.1, 4.0]], entree: [[1.3, EYE, 2.9], [2.3, 1.1, 0.8]],
+  cuisine: [[1.5, EYE, 3.0], [0.4, 1.1, 1.4]], salon: [[1.55, EYE, 2.8], [0.3, 0.8, 4.5]],
+  sdb: [[2.45, EYE, 3.95], [3.4, 1.0, 3.7]], entree: [[1.1, EYE, 2.6], [2.0, 1.1, 0.7]],
 };
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
   const [p, q] = spots[b.dataset.go]; setMode('walk'); camera.position.set(...p); camera.lookAt(...q); syncYawPitch();
@@ -797,7 +828,7 @@ function moveJoy(e) {
   joy = { x, y }; knob.style.transform = `translate(${x * 30}px, ${y * 30}px)`;
 }
 // zones où l'on peut marcher
-const zones = [[0.25, 2.1, 0.25, 0.85], [0.75, 2.1, 0.25, 5.4], [1.05, 2.1, 0.25, 3.3], [0.25, 0.6, -0.7, 0.3], [1.9, 2.75, 3.6, 4.0], [W + 0.25, B1 - 0.2, BZ0 + 0.55, BZ1 - 0.2]];
+const zones = [[0.75, 1.75, 0.25, 1.05], [0.75, 1.45, 0.25, 2.8], [1.05, 1.8, 2.6, 5.4], [1.6, 2.4, 3.65, 4.15], [B0 + 0.15, B1 - 0.5, BZ0 + 0.95, BZ1 - 0.25], [0.2, 0.6, -0.7, 0.3]];
 const canStand = (x, z) => zones.some(([a, b, c, d]) => x >= a && x <= b && z >= c && z <= d);
 
 function step(dt) {
