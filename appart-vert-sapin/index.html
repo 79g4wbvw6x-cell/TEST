@@ -501,9 +501,24 @@ const KZ0 = 1.5, KZ1 = 2.7, KD = 0.6;
 
 /* ---------- Entrée + coin repas (mur x=W) ---------- */
 {
-  B(W - 0.05, 0, 0.1, W - 0.01, 2.05, 0.95, M.green);
-  B(W - 0.06, 1.0, 0.2, W - 0.05, 1.02, 0.85, M.greenDark);
-  B(W - 0.085, 1.0, 0.81, W - 0.05, 1.03, 0.87, M.brass);
+  // porte d'entrée sur charnière (s'ouvre au début de la visite)
+  const dg = new THREE.Group(); dg.position.set(W - 0.03, 0, 0.1); groups.furn.add(dg); window.__door = dg;
+  const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.045, 2.04, 0.845), M.green); leaf.position.set(0, 1.02, 0.4225); leaf.castShadow = leaf.receiveShadow = true; dg.add(leaf);
+  [[-0.03, 1], [0.03, -1]].forEach(([dx]) => {
+    const h = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.03, 0.12), M.brass); h.position.set(dx * 1.2, 1.0, 0.76); dg.add(h);
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.012, 24), M.brass); r.rotation.z = Math.PI / 2; r.position.set(dx * 0.85, 1.0, 0.76); dg.add(r);
+  });
+  // palier
+  B(W, -0.05, -0.6, W + 1.8, 0, 1.7, new THREE.MeshStandardMaterial({ color: '#8f877b', roughness: 0.7 }), { group: groups.shell });
+  B(W + 0.3, 0, 0.18, W + 0.75, 0.012, 0.88, new THREE.MeshStandardMaterial({ color: '#4a4136', roughness: 1, bumpMap: noiseBump, bumpScale: 2 }));
+  const hall = new THREE.MeshStandardMaterial({ color: '#d9cfbf', roughness: 0.95 });
+  B(W + 1.8, 0, -0.6, W + 1.9, H, 1.7, hall, { group: groups.shell });
+  B(W, 0, -0.7, W + 1.9, H, -0.6, hall, { group: groups.shell });
+  B(W, 0, 1.7, W + 1.9, H, 1.8, hall, { group: groups.shell });
+  B(W, H, -0.6, W + 1.9, H + 0.05, 1.7, M.ceil, { group: groups.ceil });
+  B(W + 0.12, 0, -0.6, W + 0.13, 0.1, 0.05, M.white); B(W + 0.12, 0, 1.0, W + 0.13, 0.1, 1.7, M.white);
+  B(W + 0.12, 0.05, 0.05, W + 0.16, 2.12, 0.1, M.frame); B(W + 0.12, 0.05, 0.95, W + 0.16, 2.12, 1.0, M.frame); B(W + 0.12, 2.05, 0.05, W + 0.16, 2.12, 1.0, M.frame);
+  B(W + 1.78, 1.25, 1.2, W + 1.8, 1.33, 1.28, M.white);
   B(W - 0.07, 0, 0.05, W, 2.1, 0.1, M.frame); B(W - 0.07, 0, 0.95, W, 2.1, 1.0, M.frame);
   B(W - 0.07, 2.05, 0.05, W, 2.12, 1.0, M.frame);
   // placards au-dessus de la porte d'entrée
@@ -680,6 +695,7 @@ bathSpot.castShadow = true; bathSpot.shadow.mapSize.set(512, 512); bathSpot.shad
 cyl(B0 + 0.55, HM - 0.002, 3.85, 0.04, 0.004, M.bulb, { group: groups.ceil });
 const mirrorL = new THREE.RectAreaLight('#ffe6c4', 6, 0.5, 0.5); mirrorL.position.set(B1 - 0.18, 1.6, BZ0 + 1.24); mirrorL.lookAt(0, 1.5, BZ0 + 1.24); scene.add(mirrorL);
 const bathWin = new THREE.RectAreaLight('#eef3f2', 4, 0.35, 0.35); bathWin.position.set(3.12, 1.82, BZ1 - 0.02); bathWin.lookAt(3.12, 1.6, 0); scene.add(bathWin);
+const hallL = new THREE.PointLight('#ffe9c9', 1.6, 4, 2); hallL.position.set(W + 0.9, 2.5, 0.55); scene.add(hallL);
 const closetL = new THREE.PointLight('#ffe2b8', 0.8, 2, 2); closetL.position.set(0.42, 2.4, -0.45); scene.add(closetL);
 
 /* ---------- Étiquettes de cotes (maquette) ---------- */
@@ -726,20 +742,21 @@ addEventListener('resize', resize); resize();
 /* ---------- Trajet de la visite (reprend la vidéo) ---------- */
 const EYE = 1.6;
 const keys = [
-  [0, [1.55, EYE, 3.4], [0.4, 1.0, 1.4]],         // vue cuisine
-  [4, [1.4, EYE, 3.0], [0.9, 1.3, 0.0]],          // fenêtre
-  [7.5, [1.25, EYE, 2.45], [0.2, 0.95, 1.1]],     // frigo vintage + plan de travail
-  [11, [1.15, EYE, 2.3], [2.05, 1.05, 0.9]],      // entrée + table
-  [15, [1.1, EYE, 2.1], [1.3, 1.1, 5.7]],         // demi-tour vers le salon
-  [19, [1.5, EYE, 3.15], [0.2, 0.75, 4.3]],       // banquette-lit
-  [23, [1.45, EYE, 3.4], [0.95, 1.15, 5.75]],     // TV + porte-fenêtre
-  [26, [1.55, EYE, 3.9], [3.0, 1.2, 3.9]],        // porte salle d'eau
-  [29, [2.45, EYE, 3.95], [3.35, 0.95, 3.25]],    // douche à gauche
-  [32, [2.4, EYE, 3.95], [3.48, 1.15, 4.05]],     // vasque au fond
-  [34.5, [2.5, EYE, 3.95], [3.25, 0.75, 4.6]],    // WC à droite
-  [37.5, [1.55, EYE, 3.9], [0.9, 1.4, 0.3]],      // ressortir
-  [41, [1.2, EYE, 0.95], [0.35, 1.0, -0.6]],      // placard technique
-  [44, [1.5, 1.66, 5.05], [0.85, 1.15, 0.6]],     // vue d'ensemble finale
+  [0, [W + 1.15, 1.58, 0.56], [W - 1.0, 1.35, 0.5]],     // sur le palier, porte fermée
+  [1.6, [W + 1.0, 1.58, 0.55], [W - 1.0, 1.35, 0.45]],   // la porte s'ouvre
+  [4.0, [W - 0.45, EYE, 0.7], [0.3, 1.1, 2.3]],          // on entre, vue sur la cuisine
+  [6.5, [1.5, EYE, 1.65], [0.9, 1.3, 0.0]],              // fenêtre + placard
+  [9.5, [1.4, EYE, 1.55], [0.15, 1.0, 1.05]],            // frigo vintage + cuisine
+  [12.5, [1.25, EYE, 1.6], [1.15, 1.1, 5.7]],            // vue vers le salon
+  [16, [1.45, EYE, 3.0], [0.2, 0.75, 4.3]],              // banquette-lit
+  [19.5, [1.45, EYE, 3.4], [0.95, 1.15, 5.75]],          // TV + porte-fenêtre
+  [22.5, [1.55, EYE, 3.9], [3.0, 1.2, 3.9]],             // porte salle d'eau
+  [25.5, [2.45, EYE, 3.95], [3.35, 0.95, 3.25]],         // douche à gauche
+  [28, [2.4, EYE, 3.95], [3.48, 1.15, 4.05]],            // vasque au fond
+  [30.5, [2.5, EYE, 3.95], [3.25, 0.75, 4.6]],           // WC à droite
+  [33.5, [1.5, EYE, 3.7], [0.9, 1.35, 0.4]],             // ressortir
+  [36.5, [1.2, EYE, 2.0], [0.2, 0.95, 2.25]],            // évier + plaque
+  [40, [1.5, 1.66, 5.05], [0.85, 1.15, 0.6]],            // vue d'ensemble finale
 ];
 const TOUR = keys[keys.length - 1][0];
 const v3 = a => new THREE.Vector3(...a);
@@ -758,8 +775,17 @@ function samplePath(arr, t) {
 const tmpM = new THREE.Matrix4();
 function poseAt(t) {
   const p = samplePath(P, t), q = samplePath(Q, t);
-  p.y += Math.sin(t * 5.2) * 0.006; // léger pas de marche
+  // effet caméra tenue à la main : pas de marche + petits tremblements
+  const walk = Math.min(1, samplePath(P, t + 0.15).distanceTo(samplePath(P, t)) * 8);
+  p.y += Math.sin(t * 6.4) * 0.012 * walk + Math.sin(t * 1.3) * 0.004;
+  p.x += Math.sin(t * 3.2 + 1) * 0.005 * walk;
   camera.position.copy(p); camera.lookAt(q);
+  camera.rotateY(Math.sin(t * 1.1) * 0.008 + Math.sin(t * 2.9 + 2) * 0.004);
+  camera.rotateX(Math.sin(t * 1.7 + 1) * 0.006 + Math.sin(t * 4.3) * 0.003 * walk);
+  camera.rotateZ(Math.sin(t * 0.9 + 0.5) * 0.012 + Math.sin(t * 3.2) * 0.004 * walk);
+  // porte d'entrée
+  const u = THREE.MathUtils.clamp((t - 0.5) / 1.9, 0, 1), ang = (u * u * (3 - 2 * u)) * 1.62;
+  if (window.__door && window.__door.rotation.y !== -ang) { window.__door.rotation.y = -ang; renderer.shadowMap.needsUpdate = true; }
 }
 
 /* ---------- Modes : visite / balade / maquette ---------- */
@@ -782,7 +808,7 @@ function setMode(m) {
   ui.joy.hidden = m !== 'walk' || !matchMedia('(pointer: coarse)').matches;
   if (m === 'plan') { camera.position.set(W / 2 + 4.2, 7.5, L / 2 + 4.5); camera.fov = 45; camera.updateProjectionMatrix(); orbit.update(); }
   else { resize(); }
-  if (m === 'walk') syncYawPitch();
+  if (m === 'walk') { syncYawPitch(); if (window.__door) { window.__door.rotation.y = -1.62; renderer.shadowMap.needsUpdate = true; } }
   ui.hint.textContent = m === 'walk' ? (matchMedia('(pointer: coarse)').matches ? 'Glisse pour regarder, joystick pour avancer' : 'Glisse pour regarder · ZQSD ou flèches pour avancer')
     : m === 'plan' ? 'Fais tourner la maquette, pince pour zoomer' : 'Touche l’écran pour prendre la main';
 }
