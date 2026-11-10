@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>MANDAT ZÉRO — Concept v2</title>
+<style>
+@font-face{font-family:Syne;src:url('../../my-video/public/fonts/Syne-800.woff2') format('woff2');font-weight:800}
+@font-face{font-family:DMSans;src:url('../../my-video/public/fonts/DMSans-400.woff2') format('woff2');font-weight:100 900;font-style:normal}
+:root{--orange:#FF6B2B;--navy:#1B2A4A;--black:#0D0D0D;--gray:#6B7088;--soft:#F5F5F7;--line:#E3E4EA;--tint:#FFF1EA}
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:DMSans,Arial,sans-serif;color:var(--black);font-size:10.4pt;line-height:1.5;counter-reset:pg;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;padding:19mm 18mm 20mm;position:relative;overflow:hidden;page-break-after:always;background:#fff;counter-increment:pg}
+.page:last-child{page-break-after:auto}
+.foot{position:absolute;left:18mm;right:18mm;bottom:10mm;display:flex;justify-content:space-between;font-size:7.6pt;color:var(--gray);letter-spacing:.08em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:3mm}
+.foot .n::after{content:counter(pg)}
+h1,h2,h3,.syne{font-family:Syne,'Arial Black',sans-serif;font-weight:800}
+.kicker{font-size:8pt;letter-spacing:.2em;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:3mm}
+h2{font-size:22pt;line-height:1.08;color:var(--navy);letter-spacing:-.01em;margin-bottom:4mm}
+h2 em{font-style:normal;color:var(--orange)}
+.lead{font-size:12pt;line-height:1.5;color:#2b2f3d;max-width:150mm;margin-bottom:7mm}
+h3{font-size:11.5pt;color:var(--navy);margin-bottom:1.5mm;line-height:1.2}
+p{margin-bottom:2.4mm}
+b{font-weight:700}
+.o{color:var(--orange)}
+.bar{width:22mm;height:1.6mm;background:var(--orange);border-radius:1mm;margin-bottom:6mm}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4mm}
+.card{background:var(--soft);border-radius:4mm;padding:5mm;min-width:0}
+.card.navy{background:var(--navy);color:#fff}
+.card.navy h3{color:#fff}
+.card.tint{background:var(--tint)}
+.card p:last-child{margin-bottom:0}
+.small{font-size:9.2pt;line-height:1.45}
+.tiny{font-size:8.2pt;color:var(--gray);line-height:1.4}
+.num{font-family:Syne;font-weight:800;font-size:20pt;color:var(--orange);line-height:1;margin-bottom:2mm}
+ul{list-style:none}
+ul li{padding-left:4.5mm;position:relative;margin-bottom:1.6mm}
+ul li::before{content:"";position:absolute;left:0;top:.62em;width:2mm;height:2mm;border-radius:50%;background:var(--orange)}
+.card.navy ul li::before{background:var(--orange)}
+table{width:100%;border-collapse:collapse;font-size:9.3pt;line-height:1.4}
+th{font-family:Syne;font-weight:800;text-align:left;font-size:8pt;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);padding:0 3mm 2.5mm}
+td{padding:3mm;border-top:1px solid var(--line);vertical-align:top}
+td.k{font-weight:700;color:var(--navy);width:30mm}
+td.old{color:var(--gray);width:52mm}
+td.new{background:var(--tint)}
+.quote{font-family:Syne;font-weight:800;font-size:15pt;line-height:1.25;color:var(--navy);border-left:1.6mm solid var(--orange);padding-left:5mm;margin:8mm 0 6mm}
+/* cover */
+.cover{background:var(--navy);color:#fff;padding:22mm 20mm}
+.cover .logo{display:flex;align-items:center;gap:5mm}
+.cover .wm{font-family:Syne;font-weight:800;font-size:13pt;letter-spacing:.12em;line-height:1.1}
+.cover h1{font-size:62pt;line-height:.95;letter-spacing:-.02em;margin-top:58mm}
+.cover h1 span{color:var(--orange)}
+.cover .tag{font-family:Syne;font-weight:800;font-size:21pt;margin-top:9mm;line-height:1.15}
+.cover .sub{font-size:12.5pt;line-height:1.5;color:#C9CEDD;max-width:125mm;margin-top:7mm}
+.cover .meta{position:absolute;left:20mm;right:20mm;bottom:20mm;display:flex;justify-content:space-between;font-size:8.5pt;letter-spacing:.14em;text-transform:uppercase;color:#9AA2BA;border-top:1px solid #35456B;padding-top:4mm}
+.cover .slash{position:absolute;right:-30mm;top:60mm;width:150mm;height:150mm;opacity:.07}
+/* seats */
+.seats{display:flex;height:16mm;border-radius:3mm;overflow:hidden;margin:5mm 0 3mm}
+.seats div{display:flex;align-items:center;justify-content:center;font-family:Syne;font-weight:800;font-size:15pt;color:#fff}
+.legend{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-bottom:6mm}
+.legend .dot{width:3mm;height:3mm;border-radius:50%;display:inline-block;margin-right:1.5mm;vertical-align:baseline}
+.step{display:grid;grid-template-columns:11mm 1fr;gap:3mm;margin-bottom:3.5mm}
+.step .c{width:9mm;height:9mm;border-radius:50%;background:var(--navy);color:#fff;font-family:Syne;font-weight:800;font-size:10pt;display:flex;align-items:center;justify-content:center}
+.pal{border-radius:4mm;padding:4.5mm;color:#fff}
+.pal .lv{font-size:7.5pt;letter-spacing:.16em;text-transform:uppercase;opacity:.8;font-weight:700}
+.pal .nm{font-family:Syne;font-weight:800;font-size:9.6pt;margin:1mm 0 2mm}
+.pal .pts{font-family:Syne;font-weight:800;font-size:9pt;opacity:.9;margin-bottom:2mm}
+.pal p{font-size:8.8pt;line-height:1.4;margin:0}
+.road{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:5mm 0 7mm}
+.road .ph{padding:0 4mm 0 0;border-top:1.2mm solid var(--navy);padding-top:4mm;margin-right:2mm}
+.road .ph:nth-child(2){border-color:#51608a}
+.road .ph:nth-child(3){border-color:var(--orange)}
+.road .ph:nth-child(4){border-color:#ffb08a}
+.road .t{font-size:7.8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);font-weight:700}
+.road h3{margin:1mm 0 2mm}
+.qa{display:grid;grid-template-columns:62mm 1fr;gap:5mm;padding:2.6mm 0;border-top:1px solid var(--line)}
+.qa .q{font-family:Syne;font-weight:800;color:var(--navy);font-size:10.3pt;line-height:1.25}
+.qa .a{font-size:9.2pt;line-height:1.4}
+.pitch{border-left:1.2mm solid var(--orange);padding:1mm 0 1mm 4mm;margin-bottom:5mm}
+.pitch .who{font-size:7.8pt;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:1mm}
+.pitch p{font-size:10.2pt;margin:0}
+</style>
+</head>
+<body>
+
+<!-- 1 COVER -->
+<section class="page cover">
+  <svg class="slash" viewBox="0 0 140 140"><circle cx="70" cy="70" r="46" fill="none" stroke="#fff" stroke-width="14"/><line x1="22" y1="118" x2="118" y2="22" stroke="#fff" stroke-width="18" stroke-linecap="round"/></svg>
+  <div class="logo">
+    <svg width="54" height="54" viewBox="0 0 140 140"><rect width="140" height="140" rx="32" fill="#fff"/><circle cx="70" cy="70" r="46" fill="none" stroke="#1B2A4A" stroke-width="14" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="58" transform="rotate(-45 70 70)"/><line x1="22" y1="118" x2="118" y2="22" stroke="#FF6B2B" stroke-width="18" stroke-linecap="round"/></svg>
+    <div class="wm">MANDAT<br><span class="o">ZÉRO</span></div>
+  </div>
+  <h1>MANDAT<br><span>ZÉRO</span></h1>
+  <div class="tag">Le mandat avant le mandat.</div>
+  <p class="sub">Un parcours ouvert à tous pour apprendre la chose publique en la pratiquant, aux côtés des élus de tous les bords. Dossier fondateur du concept revisité.</p>
+  <div class="meta"><span>Concept v2 · Document de travail</span><span>Novembre 2026</span></div>
+</section>
+
+<!-- 2 L'IDEE -->
+<section class="page">
+  <div class="kicker">01 · L'idée</div>
+  <h2>On n'enlève pas le réseau.<br><em>On le donne à tout le monde.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">La première version disait « Fini le piston ». C'était percutant, mais c'était un combat <b>contre</b> : contre les élus, contre les partis, et au fond une course réservée à 50 gagnants. La v2 garde l'ambition et change de camp : MANDAT ZÉRO travaille <b>avec</b> les élus, et tout le monde en sort avec quelque chose.</p>
+
+  <div class="card navy" style="margin-bottom:8mm;padding:8mm">
+    <h3 style="font-size:13pt;margin-bottom:2.5mm">Ce que veut dire « Mandat Zéro »</h3>
+    <p style="font-size:11pt;line-height:1.5">C'est le mandat qui précède tous les autres. Un mandat sans pouvoir, sans indemnité et sans étiquette, que n'importe qui peut exercer là où il vit : servir, proposer, écouter, transmettre. Certains iront ensuite vers une élection, d'autres non. Tous auront appris comment se prend une décision publique, et les élus auront gagné des habitants qui la comprennent.</p>
+  </div>
+
+  <div class="grid2" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card">
+      <div class="num">1</div>
+      <h3>Un parcours, pas une course</h3>
+      <p class="small">Quatre niveaux que chacun peut atteindre à son rythme. Le classement existe encore, mais il n'est plus la seule porte de sortie.</p>
+    </div>
+    <div class="card">
+      <div class="num">2</div>
+      <h3>Avec les élus, pas contre eux</h3>
+      <p class="small">Les élus posent de vraies questions, accueillent, parrainent. En échange, ils reçoivent des travaux utiles et rencontrent des talents.</p>
+    </div>
+    <div class="card">
+      <div class="num">3</div>
+      <h3>Aucun parti, donc tous</h3>
+      <p class="small">On évalue la rigueur d'un travail, jamais l'opinion qu'il défend. Toutes les familles politiques siègent à égalité dans la gouvernance.</p>
+    </div>
+  </div>
+
+  <div class="quote" style="font-size:22pt;margin-top:14mm">Le mérite n'a pas de parti.</div>
+  <p class="tiny">Signatures proposées : « Le mandat avant le mandat » (ce que c'est) et « Le mérite n'a pas de parti » (ce qu'on défend). « Place au mérite » reste en appel à l'action. « Fini le piston » disparaît de la communication officielle.</p>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 3 AVANT APRES -->
+<section class="page">
+  <div class="kicker">02 · Ce qui change</div>
+  <h2>De la v1 à la v2,<br><em>six décisions.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Chaque ligne répond à une faiblesse précise de la première version. Rien n'est jeté : l'application, les missions, le classement et le G50 restent, mais leurs règles changent.</p>
+  <table>
+    <tr><th></th><th>Version 1</th><th>Version 2</th></tr>
+    <tr><td class="k">Le ton</td><td class="old">« Fini le piston. » Les élus sont le problème.</td><td class="new"><b>« Le mandat avant le mandat. »</b> Les élus sont des partenaires : ils posent les sujets, parrainent et répondent.</td></tr>
+    <tr><td class="k">La récompense</td><td class="old">50 gagnants, des milliers de perdants.</td><td class="new"><b>Quatre niveaux ouverts à tous</b>, chacun avec une reconnaissance concrète. Le G50 devient le sommet du parcours, pas son seul but.</td></tr>
+    <tr><td class="k">La mesure</td><td class="old">Des points d'activité : plus on en fait, plus on monte.</td><td class="new"><b>Un barème public fondé sur la qualité</b> : seules les meilleures contributions comptent, évaluées à l'aveugle par plusieurs personnes.</td></tr>
+    <tr><td class="k">L'égalité des chances</td><td class="old">Un classement national unique, favorable à ceux qui ont du temps et les codes.</td><td class="new"><b>Des sièges par région, des sièges « progression »</b> et des formats oraux ou de terrain à égalité avec l'écrit.</td></tr>
+    <tr><td class="k">La neutralité</td><td class="old">Non précisée.</td><td class="new"><b>Un conseil du pluralisme</b> où chaque famille politique a le même nombre de sièges, et une charte signée par tous.</td></tr>
+    <tr><td class="k">La promesse</td><td class="old">« Au cœur du Sénat », sans engagement en face.</td><td class="new"><b>Un droit de réponse</b> : chaque proposition portée au sommet reçoit une réponse écrite d'élus partenaires.</td></tr>
+  </table>
+
+  <div class="grid2" style="margin-top:8mm">
+    <div class="card">
+      <h3>Ce qu'on garde</h3>
+      <ul class="small">
+        <li>Le nom, le logo et l'identité visuelle.</li>
+        <li>L'application, les missions et les points.</li>
+        <li>Le classement par amis, région et France.</li>
+        <li>Le G50 et l'ancrage dans tous les territoires.</li>
+      </ul>
+    </div>
+    <div class="card tint">
+      <h3>Ce qu'on ajoute</h3>
+      <ul class="small">
+        <li>Les saisines : de vraies questions posées par des élus.</li>
+        <li>Les niveaux, le mentorat et les immersions.</li>
+        <li>Les missions en équipe et les formats oraux.</li>
+        <li>La gouvernance pluraliste et la charte.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 4 PARCOURS -->
+<section class="page">
+  <div class="kicker">03 · Le parcours</div>
+  <h2>Quatre piliers,<br><em>quatre niveaux.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Ouvert à tous dès 16 ans, sans limite d'âge, sans diplôme et gratuitement. Une saison dure une année scolaire et les compteurs repartent de zéro à chaque rentrée : personne n'arrive trop tard.</p>
+
+  <div class="grid4" style="margin-bottom:5mm">
+    <div class="card">
+      <div class="tiny" style="letter-spacing:.14em;text-transform:uppercase;font-weight:700">Inchangé</div>
+      <h3 style="font-size:8.4pt;margin:1mm 0 2mm">Terrain</h3>
+      <p class="small"><b>Agir près de chez soi.</b> Une mission attestée par une mairie ou une association : maraude, conseil de quartier, aide aux démarches, chantier.</p>
+    </div>
+    <div class="card">
+      <div class="tiny" style="letter-spacing:.14em;text-transform:uppercase;font-weight:700">Ex « Plume »</div>
+      <h3 style="font-size:8.4pt;margin:1mm 0 2mm">Idées</h3>
+      <p class="small"><b>Proposer une solution.</b> Une note, mais aussi un exposé audio ou vidéo de trois minutes. L'écrit n'est plus un passage obligé.</p>
+    </div>
+    <div class="card">
+      <div class="tiny" style="letter-spacing:.14em;text-transform:uppercase;font-weight:700">Ex « Consultation »</div>
+      <h3 style="font-size:8.4pt;margin:1mm 0 2mm">Écoute</h3>
+      <p class="small"><b>Recueillir d'autres avis que le sien.</b> Interroger des habitants, animer un débat, restituer fidèlement une position qu'on ne partage pas.</p>
+    </div>
+    <div class="card">
+      <div class="tiny" style="letter-spacing:.14em;text-transform:uppercase;font-weight:700">Ex « Numérique »</div>
+      <h3 style="font-size:8.4pt;margin:1mm 0 2mm">Transmission</h3>
+      <p class="small"><b>Faire monter les autres.</b> Expliquer un budget communal, relire le travail d'un pair, accompagner un nouveau participant.</p>
+    </div>
+  </div>
+
+  <div class="grid4">
+    <div class="pal" style="background:#8D97B5">
+      <div class="lv">Niveau 1</div><div class="nm">Découverte</div><div class="pts">dès 100 points</div>
+      <p>Attestation d'engagement et accès aux ateliers locaux.</p>
+    </div>
+    <div class="pal" style="background:#51608A">
+      <div class="lv">Niveau 2</div><div class="nm">Contribution</div><div class="pts">dès 300 points</div>
+      <p>Certificat de compétences et atelier en petit groupe avec un élu.</p>
+    </div>
+    <div class="pal" style="background:var(--navy)">
+      <div class="lv">Niveau 3</div><div class="nm">Référence</div><div class="pts">dès 550 points</div>
+      <p>Mentor attitré, journée d'immersion auprès d'un élu, droit d'évaluer les pairs.</p>
+    </div>
+    <div class="pal" style="background:var(--orange)">
+      <div class="lv">Niveau 4</div><div class="nm">Mandat Zéro</div><div class="pts">dès 750 points</div>
+      <p>Éligible au G50, immersion longue et lettre de recommandation.</p>
+    </div>
+  </div>
+  <p class="tiny" style="margin-top:3mm">Score de saison sur 1 000 points, soit 250 par pilier. À partir du niveau 2, un minimum est exigé dans chaque pilier : on ne monte pas en ne faisant qu'une seule chose. Les seuils sont des valeurs de départ, à ajuster pendant le pilote.</p>
+
+  <div class="card tint" style="margin-top:4mm">
+    <h3>La pièce maîtresse : la saisine</h3>
+    <p class="small" style="font-size:10pt">Un maire, un parlementaire ou un groupe politique dépose une vraie question (« comment maintenir un médecin dans un village de 800 habitants ? »). Les participants y travaillent pendant six semaines, seuls ou en équipe. L'élu reçoit les trois meilleures réponses et s'engage à y répondre par écrit. C'est ce mécanisme qui rend le parcours utile aux élus dès le premier jour.</p>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 5 BAREME -->
+<section class="page">
+  <div class="kicker">04 · Le barème</div>
+  <h2>Mesurer le mérite<br><em>sans le trahir.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Tout le projet repose sur cette page. Si le barème est juste, public et difficile à truquer, MANDAT ZÉRO est crédible. Sept règles, toutes publiées.</p>
+
+  <div class="step"><div class="c">1</div><div><h3>La qualité compte, pas le volume</h3><p class="small">Dans chaque pilier, seules les <b>cinq meilleures contributions</b> de la saison entrent dans le score, pour 50 points au maximum chacune. En faire cent ne rapporte rien de plus que d'en réussir cinq.</p></div></div>
+  <div class="step"><div class="c">2</div><div><h3>L'évaluation est aveugle et plurielle</h3><p class="small">Chaque contribution est anonymisée puis notée par <b>trois personnes</b> : deux pairs et un juré tiré au sort parmi des élus, des agents publics et des experts. On retient la note médiane.</p></div></div>
+  <div class="step"><div class="c">3</div><div><h3>On note la rigueur, jamais l'opinion</h3><p class="small">La grille publique a quatre critères : faits exacts et sourcés, prise en compte des objections, faisabilité, clarté. Aucune case ne porte sur l'orientation de la proposition.</p></div></div>
+  <div class="step"><div class="c">4</div><div><h3>Le terrain est attesté par un tiers</h3><p class="small">Une mission de terrain n'est validée que par la structure d'accueil (mairie, association, établissement). On ne se déclare pas méritant soi-même.</p></div></div>
+  <div class="step"><div class="c">5</div><div><h3>La progression est récompensée</h3><p class="small">Un bonus valorise l'écart entre les premières et les dernières contributions de la saison. Celui qui part de loin et progresse vite n'est pas écrasé par celui qui avait déjà les codes.</p></div></div>
+  <div class="step"><div class="c">6</div><div><h3>Le collectif rapporte autant que le solo</h3><p class="small">Les missions en équipe partagent leurs points à parts égales. Relire, évaluer ou accompagner un pair rapporte des points de Transmission.</p></div></div>
+  <div class="step"><div class="c">7</div><div><h3>Toute note peut être contestée</h3><p class="small">Un recours déclenche une nouvelle évaluation par trois autres jurés. Les évaluateurs sont eux-mêmes suivis : ceux dont les notes s'écartent souvent de la médiane perdent leur droit d'évaluer.</p></div></div>
+
+  <div class="card navy" style="margin-top:5mm">
+    <h3>Un gardien indépendant</h3>
+    <p class="small" style="font-size:9.8pt">Un <b>comité du barème</b>, composé de chercheurs et de participants tirés au sort, publie les règles, les statistiques de notation et chaque modification. Ni le bureau de l'association ni les élus partenaires ne peuvent changer une règle en cours de saison.</p>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 6 G50 -->
+<section class="page">
+  <div class="kicker">05 · Le G50</div>
+  <h2>Cinquante sièges<br><em>qui ressemblent au pays.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Le G50 ne réunit plus les 50 premiers d'un classement unique. Il réunit 50 participants de niveau 4, choisis par quatre voies, à parité entre femmes et hommes.</p>
+
+  <div class="seats">
+    <div style="flex:18;background:var(--navy)">18</div>
+    <div style="flex:16;background:#51608A">16</div>
+    <div style="flex:10;background:var(--orange)">10</div>
+    <div style="flex:6;background:#FFB08A;color:var(--navy)">6</div>
+  </div>
+  <div class="legend">
+    <div class="small"><span class="dot" style="background:var(--navy)"></span><b>18 sièges territoriaux</b><br>Le premier de chaque région, outre-mer compris.</div>
+    <div class="small"><span class="dot" style="background:#51608A"></span><b>16 sièges nationaux</b><br>Les meilleurs scores du classement général.</div>
+    <div class="small"><span class="dot" style="background:var(--orange)"></span><b>10 sièges progression</b><br>Les plus fortes progressions de la saison.</div>
+    <div class="small"><span class="dot" style="background:#FFB08A"></span><b>6 sièges collectifs</b><br>La meilleure équipe sur une saisine.</div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3 style="font-size:13pt;margin-bottom:3mm">Ce qui se passe au sommet</h3>
+      <div class="step"><div class="c">1</div><div class="small"><b>Deux jours de travail.</b> Les 50 retiennent dix propositions issues des saisines de l'année et les défendent ensemble.</div></div>
+      <div class="step"><div class="c">2</div><div class="small"><b>Une audition publique.</b> Ils les présentent devant des parlementaires et des élus locaux de tous les groupes.</div></div>
+      <div class="step"><div class="c">3</div><div class="small"><b>Un droit de réponse.</b> Chaque proposition reçoit sous trois mois une réponse écrite et argumentée, publiée sur la plateforme.</div></div>
+      <div class="step"><div class="c">4</div><div class="small"><b>Une année de suite.</b> Chaque membre est parrainé un an par un élu et devient mentor de la saison suivante.</div></div>
+    </div>
+    <div>
+      <div class="card tint" style="margin-bottom:5mm">
+        <h3>Pourquoi cette composition</h3>
+        <ul class="small">
+          <li>Un village des Pyrénées-Orientales a la même chance d'être représenté que Paris.</li>
+          <li>Les sièges progression ouvrent le sommet à ceux qui n'avaient ni les codes ni le réseau.</li>
+          <li>Les sièges collectifs rappellent qu'un mandat ne s'exerce jamais seul.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Le lieu</h3>
+        <p class="small">La v1 annonçait le Sénat. La v2 ne promet un lieu qu'une fois la convention signée. Sénat, Assemblée nationale, CESE ou association d'élus : c'est l'institution qui accueille qui donne sa valeur à l'audition, et c'est le premier partenariat à obtenir.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 7 GAINS -->
+<section class="page">
+  <div class="kicker">06 · Ce que chacun y gagne</div>
+  <h2>Personne ne donne<br><em>sans recevoir.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Un projet auquel tout le monde adhère est un projet où chacun trouve son intérêt sans qu'un autre y perde. Voici l'échange, partie par partie.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="font-size:13pt;margin-bottom:2.5mm">Les participants</h3>
+      <ul class="small">
+        <li><b>Des compétences attestées</b> à chaque niveau, utiles sur un CV bien au-delà de la politique.</li>
+        <li><b>Le réseau qu'ils n'avaient pas</b> : un mentor, une immersion, des élus qui lisent leur travail.</li>
+        <li><b>Une vraie réponse</b> à leurs propositions, pas un accusé de réception.</li>
+        <li><b>Une liberté totale</b> ensuite : rejoindre un parti, une liste, une association, ou aucun.</li>
+      </ul>
+    </div>
+    <div class="card navy">
+      <h3 style="font-size:13pt;margin-bottom:2.5mm">Les élus</h3>
+      <ul class="small">
+        <li><b>Des travaux sur leurs vrais sujets</b>, gratuits, sourcés et déjà triés par la qualité.</li>
+        <li><b>Un vivier</b> de futurs collaborateurs, conseillers municipaux et colistiers, y compris dans les petites communes.</li>
+        <li><b>Un lien direct</b> avec des habitants qui ne viennent jamais en réunion publique.</li>
+        <li><b>Un engagement léger</b> : une saisine et deux heures de mentorat par trimestre.</li>
+      </ul>
+    </div>
+    <div class="card navy">
+      <h3 style="font-size:13pt;margin-bottom:2.5mm">Les partis et les groupes</h3>
+      <ul class="small">
+        <li><b>Une égalité stricte</b> : même nombre de sièges, même visibilité, mêmes droits de saisine pour chacun.</li>
+        <li><b>Des talents formés</b> qui choisissent librement de les rejoindre, sur la base du volontariat.</li>
+        <li><b>Un terrain neutre</b> pour tester une idée auprès de citoyens informés, hors campagne.</li>
+        <li><b>La preuve par l'acte</b> qu'ils ouvrent leurs portes, sans changer leurs statuts.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size:13pt;margin-bottom:2.5mm">Les communes et les associations</h3>
+      <ul class="small">
+        <li><b>Des bénévoles motivés</b> pour leurs missions de terrain, déjà encadrés par le parcours.</li>
+        <li><b>Des habitants qui comprennent</b> un budget, une compétence, une contrainte légale.</li>
+        <li><b>Une visibilité nationale</b> pour les territoires qu'on n'entend jamais.</li>
+        <li><b>Aucun coût</b> : la structure accueille et atteste, l'association porte le reste.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quote" style="margin-top:7mm">Refuser d'adhérer coûte plus cher qu'adhérer : un siège vide au conseil du pluralisme se voit.</div>
+  <p class="small">C'est le ressort de l'adhésion. Chaque famille politique dispose du même nombre de sièges fondateurs. Celles qui s'engagent tôt façonnent les règles et rencontrent les premiers talents. Aucune n'a intérêt à laisser sa place inoccupée pendant que les autres siègent.</p>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 8 GARANTIES -->
+<section class="page">
+  <div class="kicker">07 · Les garanties</div>
+  <h2>Une charte<br><em>en sept engagements.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">La confiance de tous les bords ne se décrète pas. Elle tient à des règles écrites, signées par chaque partenaire et vérifiables par n'importe qui.</p>
+
+  <div class="grid2">
+    <div>
+      <div class="step"><div class="c">1</div><div><h3>Pluralisme</h3><p class="small">Un conseil du pluralisme où chaque famille politique représentée au Parlement a le même nombre de sièges. Présidence tournante chaque saison.</p></div></div>
+      <div class="step"><div class="c">2</div><div><h3>Neutralité</h3><p class="small">L'association ne soutient aucun candidat, aucune liste et aucun texte. Elle ne prend pas position sur le fond des propositions.</p></div></div>
+      <div class="step"><div class="c">3</div><div><h3>Indépendance financière</h3><p class="small">Aucun financement venant d'un parti. Aucun financeur au-delà de 20 % du budget. Comptes publiés chaque année.</p></div></div>
+      <div class="step"><div class="c">4</div><div><h3>Barème public</h3><p class="small">Les règles, les grilles et les statistiques de notation sont en ligne. Aucune règle ne change en cours de saison.</p></div></div>
+    </div>
+    <div>
+      <div class="step"><div class="c">5</div><div><h3>Protection des données</h3><p class="small">Aucune question sur l'appartenance ou le vote. Pseudonyme par défaut. Un participant n'est visible d'un élu ou d'un parti que s'il le choisit.</p></div></div>
+      <div class="step"><div class="c">6</div><div><h3>Réserve électorale</h3><p class="small">Pendant les campagnes officielles, les élus candidats n'apparaissent plus sur la plateforme et aucune saisine nouvelle n'est ouverte dans leur territoire.</p></div></div>
+      <div class="step"><div class="c">7</div><div><h3>Accès pour tous</h3><p class="small">Gratuité, contenus en langage clair, formats audio et vidéo, accessibilité numérique, et des points d'accueil physiques en mairie ou en médiathèque.</p></div></div>
+    </div>
+  </div>
+
+  <h3 style="font-size:13pt;margin:6mm 0 3mm">Qui décide de quoi</h3>
+  <table>
+    <tr><th>Instance</th><th>Composition</th><th>Rôle</th></tr>
+    <tr><td class="k">Bureau</td><td>Fondateurs et bénévoles élus par les adhérents.</td><td>Fait tourner l'association. Ne touche ni au barème ni aux notes.</td></tr>
+    <tr><td class="k">Conseil du pluralisme</td><td>Sièges égaux par famille politique, plus des élus sans étiquette.</td><td>Veille à l'équilibre des saisines, des jurys et de la communication.</td></tr>
+    <tr><td class="k">Comité du barème</td><td>Chercheurs et participants tirés au sort.</td><td>Écrit et publie les règles de notation, instruit les recours.</td></tr>
+    <tr><td class="k">Assemblée des participants</td><td>Les participants de niveau 2 et plus.</td><td>Vote le bilan de saison et propose les évolutions du parcours.</td></tr>
+  </table>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 9 OBJECTIONS -->
+<section class="page">
+  <div class="kicker">08 · Les objections</div>
+  <h2>Huit critiques,<br><em>huit réponses prêtes.</em></h2>
+  <div class="bar"></div>
+  <p class="lead" style="margin-bottom:5mm">Voici ce que dira un élu sceptique, un journaliste ou un adversaire, et ce que la v2 répond.</p>
+
+  <div class="qa"><div class="q">« C'est un mouvement contre les élus. »</div><div class="a">Les élus posent les sujets, siègent dans les jurys et parrainent les participants. Le parcours leur fournit du travail utile et des relais. Le slogan « Fini le piston » est retiré.</div></div>
+  <div class="qa"><div class="q">« C'est un parti déguisé. »</div><div class="a">L'association ne présente ni ne soutient aucun candidat. Toutes les familles politiques siègent à égalité et aucune ne finance. Les participants ne déclarent jamais leurs opinions.</div></div>
+  <div class="qa"><div class="q">« Ça favorisera les diplômés des grandes villes. »</div><div class="a">18 sièges régionaux et 10 sièges progression sur 50. Formats oraux et missions de terrain à égalité avec l'écrit. Remise à zéro à chaque saison.</div></div>
+  <div class="qa"><div class="q">« Les points, ça se triche. »</div><div class="a">Cinq contributions seulement comptent par pilier. Notation anonyme par trois personnes. Terrain attesté par un tiers. Évaluateurs eux-mêmes contrôlés.</div></div>
+  <div class="qa"><div class="q">« Qui êtes-vous pour juger le mérite ? »</div><div class="a">Personne seul. Une grille publique, des jurys tirés au sort mêlant pairs, élus et experts, un comité indépendant et un droit de recours.</div></div>
+  <div class="qa"><div class="q">« Le pouvoir se gagne par l'élection, pas par un classement. »</div><div class="a">Exact, et rien ne change là-dessus. Mandat Zéro ne donne aucun pouvoir. Il prépare des citoyens à se présenter un jour devant les électeurs, ou à mieux les servir autrement.</div></div>
+  <div class="qa"><div class="q">« Les élus n'ont pas le temps. »</div><div class="a">L'engagement demandé est d'une saisine et de deux heures par trimestre. En retour, ils reçoivent trois réponses travaillées à une question qu'ils se posaient déjà.</div></div>
+  <div class="qa" style="border-bottom:1px solid var(--line)"><div class="q">« Qui paie, et pourquoi ? »</div><div class="a">Cotisations, dons plafonnés, fondations et subventions publiques. Aucun financeur ne dépasse 20 % du budget et les comptes sont publiés.</div></div>
+
+  <div class="card tint" style="margin-top:5mm">
+    <h3>La seule objection sans réponse toute faite</h3>
+    <p class="small" style="font-size:10pt">« Et si les élus ne répondent pas aux propositions ? » Le droit de réponse est un engagement moral inscrit dans la charte, pas une obligation légale. La parade est la transparence : la plateforme affiche pour chaque élu partenaire le nombre de saisines déposées et de réponses rendues. Un partenaire qui ne répond plus perd son statut à la saison suivante.</p>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 10 ROADMAP -->
+<section class="page">
+  <div class="kicker">09 · La feuille de route</div>
+  <h2>Petit, prouvé,<br><em>puis partout.</em></h2>
+  <div class="bar"></div>
+  <p class="lead">Le concept ne se lance pas en national. Il se prouve d'abord sur trois territoires très différents, avec des élus de bords opposés, puis il s'étend avec des chiffres à l'appui.</p>
+
+  <div class="road">
+    <div class="ph"><div class="t">Mois 1 à 3</div><h3>Fondations</h3><p class="small">Statuts, charte et barème v1. Recrutement de 10 élus fondateurs, équilibrés entre les familles politiques. Premier comité du barème.</p></div>
+    <div class="ph"><div class="t">Mois 4 à 9</div><h3>Pilote</h3><p class="small">Trois territoires : une métropole, une ville moyenne, un territoire rural. 300 participants, 15 élus, 10 saisines. Barème ajusté sur les données.</p></div>
+    <div class="ph"><div class="t">Année 2</div><h3>Saison 1</h3><p class="small">Ouverture nationale région par région. Convention avec une institution d'accueil. Premier G50 et premières réponses publiées.</p></div>
+    <div class="ph"><div class="t">Année 3 et suite</div><h3>Installation</h3><p class="small">Antennes locales animées par les anciens. Reconnaissance officielle des certificats. Bilan public indépendant.</p></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="font-size:12.5pt;margin-bottom:3mm">Ce que le pilote doit prouver</h3>
+      <ul class="small">
+        <li>Au moins <b>60 %</b> des inscrits atteignent le niveau 1.</li>
+        <li>Les participants <b>sans diplôme du supérieur</b> sont aussi nombreux au niveau 3 qu'à l'inscription, en proportion.</li>
+        <li><b>Chaque saisine</b> reçoit sa réponse écrite dans les trois mois.</li>
+        <li>Les élus partenaires viennent d'<b>au moins quatre familles politiques</b>.</li>
+        <li>Deux évaluateurs donnent des notes proches sur une même copie.</li>
+      </ul>
+    </div>
+    <div class="card navy">
+      <h3 style="font-size:12.5pt;margin-bottom:3mm">Ce qui arrête le projet</h3>
+      <ul class="small">
+        <li>Une seule famille politique accepte de siéger : le pluralisme n'est pas réel, on ne lance pas.</li>
+        <li>Les niveaux élevés ne comptent que des profils déjà favorisés : le barème est à refaire avant toute extension.</li>
+        <li>Les saisines restent sans réponse : la promesse faite aux participants ne tient pas.</li>
+      </ul>
+      <p class="small" style="margin-top:3mm;color:#C9CEDD">Fixer ces seuils à l'avance, c'est aussi un argument auprès des partenaires : le projet s'engage sur des résultats.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size:12.5pt;margin:7mm 0 3mm">Les moyens du pilote</h3>
+  <div class="grid4">
+    <div class="small"><b class="o syne" style="font-size:11pt">Équipe</b><br>Un coordinateur, un responsable du barème, un animateur par territoire.</div>
+    <div class="small"><b class="o syne" style="font-size:11pt">Outil</b><br>Une application web simple suffit : missions, dépôt, notation, niveaux.</div>
+    <div class="small"><b class="o syne" style="font-size:11pt">Partenaires</b><br>Trois mairies, des associations locales, un laboratoire de recherche.</div>
+    <div class="small"><b class="o syne" style="font-size:11pt">Budget</b><br>À chiffrer une fois l'équipe et l'outil arrêtés.</div>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+<!-- 11 ADHERER -->
+<section class="page">
+  <div class="kicker">10 · Adhérer</div>
+  <h2>Le cercle fondateur,<br><em>et ce qu'on dit à chacun.</em></h2>
+  <div class="bar"></div>
+
+  <div class="card navy" style="margin-bottom:7mm">
+    <h3 style="font-size:13pt;margin-bottom:2.5mm">L'offre aux 50 élus fondateurs</h3>
+    <p style="font-size:10.6pt">Cinquante places, réparties à égalité entre les familles politiques et entre les échelons (communes, départements, régions, Parlement). Chaque fondateur signe la charte, dépose une saisine et donne deux heures par trimestre. En échange, il participe à l'écriture des règles, reçoit les premiers travaux et parraine les premiers participants. La liste des fondateurs est publique, tout comme les places restées libres.</p>
+  </div>
+
+  <div class="pitch"><div class="who">À un maire</div><p>« Vous avez un problème que personne n'a le temps d'étudier. Donnez-le à des habitants motivés pendant six semaines. Vous recevez trois réponses travaillées, vous en choisissez une, vous répondez aux auteurs. Et vous aurez peut-être trouvé vos futurs conseillers municipaux. »</p></div>
+  <div class="pitch"><div class="who">À un parlementaire</div><p>« Des citoyens de toute la France, formés et notés sur leur rigueur, travaillent sur vos sujets et vous disent ce qui tient debout. Vos collègues de tous les groupes y siègent déjà. »</p></div>
+  <div class="pitch"><div class="who">À un dirigeant de parti</div><p>« On ne vous demande ni argent ni soutien. On vous offre un siège égal à celui de vos adversaires dans un lieu où des talents se forment à la chose publique. Ceux qui partagent vos idées viendront vers vous d'eux-mêmes. »</p></div>
+  <div class="pitch"><div class="who">À un participant</div><p>« Tu n'as pas besoin de connaître quelqu'un. Agis près de chez toi, propose, écoute, transmets. À chaque niveau tu gagnes quelque chose de concret, et des élus liront vraiment ton travail. »</p></div>
+
+  <h3 style="font-size:12.5pt;margin:6mm 0 3mm">Les points à valider avant de diffuser</h3>
+  <div class="grid2">
+    <ul class="small">
+      <li><b>Juridique.</b> Statuts, règles de financement de la vie politique et réserve électorale, à faire relire par un avocat.</li>
+      <li><b>Données.</b> Les contributions peuvent révéler des opinions politiques : analyse RGPD complète et âge minimal à confirmer.</li>
+      <li><b>Institution d'accueil.</b> Aucune convention n'existe à ce jour pour le G50.</li>
+    </ul>
+    <ul class="small">
+      <li><b>Chiffres du barème.</b> Seuils, plafonds et bonus sont des hypothèses de départ, à tester en pilote.</li>
+      <li><b>Reconnaissance des certificats.</b> Leur valeur officielle reste à négocier.</li>
+      <li><b>Vidéo et application.</b> Le teaser actuel porte encore le message de la v1 et doit être mis à jour.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>Mandat Zéro · Concept v2</span><span class="n"></span></div>
+</section>
+
+</body>
+</html>
