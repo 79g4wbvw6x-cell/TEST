@@ -2,7 +2,13 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const d = __dirname, r = f => fs.readFileSync(path.join(d, f), 'utf8');
-fs.writeFileSync(path.join(d, 'textes.html'), r('head.html') + r('t1.html') + r('t2.html') + r('t3.html') + r('tail.html'));
+// Les textes et leurs articles sont renumérotés automatiquement.
+let n = 0;
+const body = (r('t1.html') + r('t2.html') + r('t3.html')).split('<div class="texte">').map((part, i) => {
+  if (i === 0) return part; n++; let a = 0;
+  return part.replace(/<div class="kicker">Texte \d+<\/div>/, `<div class="kicker">Texte ${n}</div>`).replace(/Article \d+ ·/g, () => `Article ${++a} ·`);
+}).join('<div class="texte">');
+fs.writeFileSync(path.join(d, 'textes.html'), r('head.html') + body + r('tail.html'));
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage();
