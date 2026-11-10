@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const d = __dirname, r = f => fs.readFileSync(path.join(d, f), 'utf8');
 const foot = '<div class="foot"><span>Mandat Zéro · Dossier de lancement</span><span class="n"></span></div>';
-const html = (r('head.html') + r('p1.html') + r('p2.html') + r('p3.html') + r('tail.html')).replace(/<!--F-->/g, foot);
+const html = (r('head.html') + r('p1.html') + r('p2.html') + r('p3.html') + r('tail.html')).replace(/<!--F-->/g, foot).replace(/<div class="kicker">\d+ — /g, (() => { let i = 0; return () => `<div class="kicker">${String(++i).padStart(2, '0')} — `; })());
 fs.writeFileSync(path.join(d, 'dossier.html'), html); // fichier assemblé, régénéré à chaque build
 (async () => {
   const b = await chromium.launch();
