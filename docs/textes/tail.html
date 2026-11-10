@@ -1,0 +1,8 @@
+<script>
+function hemi(o){const rows=o.rows,rin=o.rin,rout=o.rout;let radii=[];for(let i=0;i<rows;i++)radii.push(rin+(rout-rin)*i/(rows-1||1));const counts=o.counts,pad=o.dot+1,W=2*(rout+pad),H=rout+2*pad;let c='';
+counts.forEach((cnt,ri)=>{for(let k=0;k<cnt;k++){const a=Math.PI-(Math.PI*(k+0.5)/cnt);const x=(rout+pad)+radii[ri]*Math.cos(a),y=(rout+pad)-radii[ri]*Math.sin(a);const hi=o.hi[0]===ri&&o.hi[1]===k;c+=`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${o.dot}" fill="${hi?o.hiColor:o.color}"/>`;}});
+return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="display:block;width:100%">${c}</svg>`;}
+document.querySelectorAll('[data-logo]').forEach(e=>{e.style.display='inline-block';e.style.width=e.dataset.s+'mm';e.style.flex='none';const d=e.dataset.logo==='dark';e.innerHTML=hemi({rows:3,rin:9,rout:23,counts:[5,8,11],dot:2.5,color:d?'#141B2D':'#F7F3EA',hi:[0,2],hiColor:d?'#B08A3E':'#D8BC7A'});});
+</script>
+</body>
+</html>

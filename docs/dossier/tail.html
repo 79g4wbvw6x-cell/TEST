@@ -7,7 +7,7 @@ function hemi(o){
   const pad=o.dot+1,W=2*(rout+pad),H=rout+2*pad;let c='';
   counts.forEach((cnt,ri)=>{for(let k=0;k<cnt;k++){const a=Math.PI-(Math.PI*(k+0.5)/cnt)*(1-2*(o.gap||0))-Math.PI*(o.gap||0);
     const x=(rout+pad)+radii[ri]*Math.cos(a), y=(rout+pad)-radii[ri]*Math.sin(a);
-    const hi=o.hi&&o.hi[0]===ri&&o.hi[1]===k;
+    const hi=(o.his||(o.hi?[o.hi]:[])).some(h=>h[0]===ri&&h[1]===k);
     c+=`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${hi?(o.dot*(o.hiScale||1)).toFixed(2):o.dot}" fill="${hi?o.hiColor:o.color}"${hi?'':` opacity="${o.op||1}"`}/>`;}});
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="display:block;width:100%">${c}</svg>`;
 }
@@ -15,6 +15,7 @@ window.MZ={
   logo:(dark)=>hemi({rows:3,rin:9,rout:23,counts:[5,8,11],dot:2.5,color:dark?'#141B2D':'#F7F3EA',hi:[0,2],hiColor:dark?'#B08A3E':'#D8BC7A'}),
   cover:()=>hemi({n:348,rows:9,rin:34,rout:100,dot:2.35,color:'#F7F3EA',op:.32,hi:[4,24],hiColor:'#D8BC7A',hiScale:1.25}),
   page:()=>hemi({n:348,rows:9,rin:34,rout:100,dot:2.35,color:'#141B2D',op:.85,hi:[4,24],hiColor:'#B08A3E',hiScale:1.3}),
+  mini:()=>hemi({rows:4,rin:16,rout:40,counts:[9,13,17,21],dot:2.1,color:'#141B2D',op:.28,his:[[1,6],[2,9]],hiColor:'#B08A3E',hiScale:1.35}),
   post:()=>hemi({n:348,rows:9,rin:34,rout:100,dot:2.3,color:'#F7F3EA',op:.3,hi:[3,10],hiColor:'#D8BC7A',hiScale:1.5})
 };
 document.querySelectorAll('[data-logo]').forEach(e=>{e.style.display='inline-block';e.style.width=e.dataset.s+'mm';e.style.flex='none';e.innerHTML=MZ.logo(e.dataset.logo==='dark');});

@@ -2,9 +2,21 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const d = __dirname, r = f => fs.readFileSync(path.join(d, f), 'utf8');
+const ORDER = ['COVER', 'ESSENTIEL', '3 POURQUOI', 'SAISON', 'MOTEUR', 'X1 SEMAINE', 'X2 SIEGE', 'X3 PASSEPORT', 'X4 SOIRS', 'X5 ENVIE',
+  '5 POINTS', '6 BAREME', '7 348', '8 SOMMET', '9 PARTICIPANTS', '10 PARTENAIRES GAINS', '11 APOLITIQUE', 'GOUVERNANCE',
+  'QUI VOIR LOCAL', 'QUI VOIR', '14 SCRIPTS', '15 BUDGET SOMMET', 'BUDGET GLOBAL', '17 CALENDRIER', '18 PLAN 90 JOURS', '19 RISQUES',
+  '20 IDENTITE 1', '21 IDENTITE 2', 'JEUDI'];
+const src = ['p1.html', 'p2.html', 'p3.html', ...fs.readdirSync(path.join(d, 'new')).sort().map(f => 'new/' + f)].map(r).join('\n');
+const secs = {};
+for (const m of src.matchAll(/<!-- ([^>]+?) -->\s*(<section[\s\S]*?<\/section>)/g)) secs[m[1]] = m[2]; // les fichiers de new/ remplacent les anciens
+const miss = ORDER.filter(k => !secs[k]); if (miss.length) throw new Error('sections manquantes: ' + miss);
 const foot = '<div class="foot"><span>Mandat Zéro · Dossier de lancement</span><span class="n"></span></div>';
-const html = (r('head.html') + r('p1.html') + r('p2.html') + r('p3.html') + r('tail.html')).replace(/<!--F-->/g, foot).replace(/<div class="kicker">\d+ — /g, (() => { let i = 0; return () => `<div class="kicker">${String(++i).padStart(2, '0')} — `; })());
-fs.writeFileSync(path.join(d, 'dossier.html'), html); // fichier assemblé, régénéré à chaque build
+let i = 0;
+let body = ORDER.map(k => secs[k]).join('\n\n')
+  .replace(/<!--F-->/g, foot)
+  .replace(/<div class="kicker">\d+ — /g, () => `<div class="kicker">${String(++i).padStart(2, '0')} — `)
+  .replace(/\[\[p:([^\]]+)\]\]/g, (_, n) => { const j = ORDER.findIndex(k => k === n || k.endsWith(' ' + n)); if (j < 0) throw new Error('renvoi inconnu ' + n); return String(j + 1); });
+fs.writeFileSync(path.join(d, 'dossier.html'), r('head.html') + body + r('tail.html'));
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage();
@@ -13,23 +25,9 @@ fs.writeFileSync(path.join(d, 'dossier.html'), html); // fichier assemblé, rég
   const rep = await p.evaluate(() => [...document.querySelectorAll('.page')].map((s, i) => {
     const f = s.querySelector('.foot'); const lim = f ? f.getBoundingClientRect().top : s.getBoundingClientRect().bottom;
     let m = 0; s.querySelectorAll(':scope > *:not(.foot):not(.meta)').forEach(e => { m = Math.max(m, e.getBoundingClientRect().bottom); });
-    let wide = 0; s.querySelectorAll('*').forEach(e => { const q = e.getBoundingClientRect(); if (q.right > s.getBoundingClientRect().right - 40 && q.width > 0 && !e.closest('.cover')) wide++; });
-    return `p${i + 1}: ${Math.round(lim - m)}px${wide ? ' WIDE' + wide : ''}`;
+    return `p${i + 1}:${Math.round(lim - m)}`;
   }));
-  console.log(rep.join(' | '));
+  console.log(rep.join(' '));
   await p.pdf({ path: path.join(d, '..', 'MANDAT-ZERO-Dossier-de-lancement.pdf'), format: 'A4', printBackground: true, preferCSSPageSize: true });
-  // logos
-  const brand = path.join(d, '..', 'brand');
-  for (const [name, dark] of [['symbole-encre', true], ['symbole-papier', false]])
-    fs.writeFileSync(path.join(brand, name + '.svg'), await p.evaluate(k => MZ.logo(k).replace(' style="display:block;width:100%"', ''), dark));
-  const q = await b.newPage({ deviceScaleFactor: 4 });
-  for (const [name, dark] of [['logo-sur-papier', true], ['logo-sur-encre', false]]) {
-    await q.setContent(`<style>@font-face{font-family:IS;src:url('file://${d}/fonts/instrument-serif-latin-400-normal.woff2')}@font-face{font-family:IS;font-style:italic;src:url('file://${d}/fonts/instrument-serif-latin-400-italic.woff2')}
-      body{margin:0;background:transparent}#l{display:inline-flex;align-items:center;gap:22px;padding:30px 36px;font:400 96px/1 IS,serif;color:${dark ? '#141B2D' : '#F7F3EA'}}#l i{color:${dark ? '#86661F' : '#D8BC7A'}}#m{width:120px}</style>
-      <div id="l"><span id="m"></span><span>Mandat <i>Zéro</i></span></div>`);
-    await q.evaluate(([s]) => { document.getElementById('m').innerHTML = s; }, [await p.evaluate(k => MZ.logo(k), dark)]);
-    await q.evaluate(() => document.fonts.ready);
-    await q.locator('#l').screenshot({ path: path.join(brand, name + '.png'), omitBackground: true });
-  }
   await b.close();
 })();

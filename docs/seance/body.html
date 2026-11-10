@@ -1,0 +1,93 @@
+<style>
+.pt{border-top:.5mm solid var(--ink);padding-top:3mm;margin-bottom:5mm}
+.pt .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2mm}
+.pt .hd .n{font-family:IS,Georgia,serif;font-size:22pt;line-height:1;color:var(--goldd);margin-right:3mm}
+.pt .hd h3{font-size:17pt;margin:0;flex:1}
+.pt .hd .tm{font-size:7.4pt;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--stone);white-space:nowrap}
+.pt .gr{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.pt h4{margin-top:2.5mm}
+.opt{margin-bottom:1.3mm;font-size:9pt;line-height:1.35;padding-left:5.5mm;position:relative}
+.opt i{position:absolute;left:0;top:.5mm;width:3.3mm;height:3.3mm;border:.35mm solid var(--ink);border-radius:.5mm}
+.lines{height:30.3mm;background:repeating-linear-gradient(to bottom,transparent 0,transparent 7.5mm,var(--line) 7.5mm,var(--line) 7.8mm);margin-top:.5mm}
+.dec{display:grid;grid-template-columns:2.2fr 1fr 1fr;gap:5mm;margin-top:3mm;font-size:7.4pt;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--goldd)}
+.dec div{border-bottom:.35mm solid var(--ink);height:9mm}
+.reco{font-size:8.6pt;background:var(--paper2);padding:2mm 3mm;margin-top:2mm;line-height:1.4}
+</style>
+<section class="page">
+  <div class="kicker">Cahier de séance</div>
+  <h2>Réunion des coprésidents<br><em>jeudi 12 novembre 2026.</em></h2>
+  <p class="lead">Douze points, deux heures et demie. Pour chacun : ce que propose le dossier, la question à trancher, les options, et de la place pour écrire ce qui ne va pas. À la fin, le relevé de décisions de la dernière page me sert de retour.</p>
+
+  <div class="g2" style="grid-template-columns:1.5fr 1fr">
+    <div>
+      <h4>Ordre du jour</h4>
+      <table id="odj"></table>
+    </div>
+    <div>
+      <div class="box ink mb">
+        <h4>Avant la réunion</h4>
+        <ul class="sm">
+          <li>Lire chacun la page 2 du dossier et les pages 5 à 10 sur l'expérience.</li>
+          <li>Relire vos statuts actuels et les avoir sous la main.</li>
+          <li>Venir chacun avec cinq noms d'élus ou de structures à contacter.</li>
+        </ul>
+      </div>
+      <div class="box mb">
+        <h4>Pendant</h4>
+        <ul class="sm">
+          <li>Un seul tient le stylo, l'autre tient l'heure.</li>
+          <li>On tranche ou on note « à revoir », on ne reste pas bloqués.</li>
+          <li>Chaque décision a un responsable et une date.</li>
+        </ul>
+      </div>
+      <div class="box gold">
+        <h4>Après</h4>
+        <p class="sm">Envoyez-moi une photo de la dernière page et des points marqués « à revoir ». Je mets à jour le dossier et les textes en conséquence.</p>
+      </div>
+    </div>
+  </div>
+  <!--F-->
+</section>
+<div id="pts"></div>
+<section class="page">
+  <div class="kicker">Relevé de décisions</div>
+  <h2>Ce qu'on a décidé,<br><em>et ce qui reste ouvert.</em></h2>
+  <table id="rel"></table>
+  <div class="g2 mt2">
+    <div>
+      <h4>Ce qu'il faut modifier dans le dossier</h4>
+      <div class="lines" style="height:47mm"></div>
+    </div>
+    <div>
+      <h4>Les questions restées sans réponse</h4>
+      <div class="lines" style="height:47mm"></div>
+    </div>
+  </div>
+  <div class="dec"><div>Prochaine réunion</div><div>Date</div><div>Lieu</div></div>
+  <!--F-->
+</section>
+<script>
+const P=[
+ {t:"Le moteur",m:10,d:"Des missions ponctuelles pour entrer, des saisines pour monter. Les missions sont plafonnées à dix par saison ; cinq réponses aux saisines comptent. Dossier, page 5.",q:"Confirme-t-on les deux ensemble, et dans quelles proportions ?",o:["Les deux, comme proposé","Les deux, avec plus de poids pour les missions","Missions seules, et on repense le Sommet","Saisines seules"],r:"Les deux. La saison zéro dira s'il faut changer les proportions."},
+ {t:"Le public",m:10,d:"Le projet d'avril visait les 16-25 ans. Le dossier y revient : c'est plus clair pour les lycées, les parents, les financeurs et l'intérêt général. Dossier, page 4.",q:"Qui peut participer ?",o:["16 à 25 ans","15 à 25 ans","18 à 25 ans, pour éviter la question des mineurs","Tous les âges"],r:"16 à 25 ans. Les plus âgés deviennent jurés, mentors ou ambassadeurs."},
+ {t:"L'expérience",m:20,d:"Ce qui donne envie de revenir : le Dilemme du dimanche, le siège qui change de mains, la carte, les cabinets, le passeport, les Coulisses, trois grands soirs. Dossier, pages 6 à 10.",q:"Que garde-t-on pour la saison zéro, et qu'est-ce qui ne vous plaît pas ?",o:["Le Dilemme du dimanche","Les sièges et le relevé","La carte et « ouvre ton département »","Les cabinets","Le passeport et les Coulisses","Les 348 fondateurs numérotés"],r:"Dilemme, missions et sièges en saison zéro. Le reste en saison 1."},
+ {t:"Le barème",m:10,d:"1 000 points : 500 pour proposer, 300 pour agir, 200 pour transmettre. Trois évaluateurs anonymes. Le Dilemme et le passeport ne comptent pas pour les sièges. Dossier, pages 11 et 12.",q:"La répartition est-elle juste ? Les règles sont-elles compréhensibles par un lycéen ?",o:["On garde 500 / 300 / 200","On rééquilibre vers le terrain : 400 / 400 / 200","On simplifie encore"],r:"Garder la répartition et la tester. C'est le comité du barème qui tranchera ensuite."},
+ {t:"Les 348 et le Sommet",m:15,d:"Un délégué par siège de sénateur. Le Sommet adopte dix solutions, des communes les testent, un bilan public suit. Si le budget manque, un délégué par département la première année. Dossier, pages 13 et 14.",q:"Valide-t-on le principe, le nom et la règle de prudence ?",o:["348 dès la saison 1","Un par département en saison 1, 348 en saison 2","Nom « Sommet des 348 »","Un autre nom"],r:"Viser 348, avec la règle de prudence au 1er mars 2028."},
+ {t:"La neutralité des dirigeants",m:10,d:"Pendant votre mandat associatif : ni candidat, ni élu, ni porte-parole d'un parti, et pas de soutien public à un candidat. Statuts, article 14. Charte, point 6. Dossier, page 17.",q:"Êtes-vous prêts tous les deux à signer cette règle ? L'un de vous a-t-il un engagement ou un proche engagé en politique dont il faut tenir compte ?",o:["Oui, sans réserve","Oui, avec une réserve à écrire","Non, il faut en reparler"],r:"Oui, par écrit. C'est la condition de tout le reste."},
+ {t:"Les statuts et le bureau",m:15,d:"Statuts révisés en 29 articles, à comparer avec les vôtres. Un trésorier majeur à recruter, un conseil de cinq à onze membres, deux instances indépendantes. Recueil, texte 1.",q:"Quels articles posent problème ? Qui pourrait être trésorier ?",o:["On adopte après relecture gratuite","On garde nos statuts et on ajoute seulement la neutralité","On ouvre l'association à des membres votants"],r:"Adopter la version révisée après un passage par Guid'Asso."},
+ {t:"Les mineurs",m:10,d:"Dix règles : jamais seul avec un adulte, échanges sur la plateforme, accord des parents, accompagnement au Sommet, référent extérieur au bureau. Recueil, texte 6.",q:"Qui peut être le référent ? Les règles sont-elles tenables ?",o:["On adopte telles quelles","On adopte avec des changements","On réserve la saison zéro aux majeurs"],r:"Adopter telles quelles. Elles rassurent les parents et les lycées."},
+ {t:"Le budget de la saison zéro",m:15,d:"2 900 € : marques, assurance, outils, déplacements, clôture au Sénat. Financement par une collecte, le fonds étudiant, un partenaire local. Dossier, page 23.",q:"Qui cherche quoi, et que fait-on si on ne réunit que la moitié ?",o:["Collecte en ligne auprès des proches","Fonds des initiatives étudiantes","Une banque ou une mutuelle locale","Apport personnel"],r:"Lancer la collecte et le dossier étudiant dès décembre."},
+ {t:"Les dix premières portes",m:20,d:"Vos maires, huit autres maires, vos lycées, vos quatre sénateurs, votre établissement, Guid'Asso, dix associations, la presse locale, un partenaire local, les deux départements. Dossier, page 19.",q:"Quel nom, quel coprésident et quelle date pour chaque porte ?",o:["Maires de Bompas et de Leucate","Vos anciens lycées","Les quatre sénateurs","La presse locale","Guid'Asso"],r:"Commencer par les deux maires et les deux lycées avant les vacances de Noël."},
+ {t:"L'identité visuelle",m:5,d:"Encre, papier, or. Lettres de livre. Un hémicycle dont un siège est doré. L'orange et le zéro barré disparaissent. Dossier, pages 27 et 28.",q:"On adopte, on ajuste ou on garde l'ancienne ?",o:["On adopte","On adopte en gardant une touche d'orange","On garde l'ancienne identité"],r:"Adopter. L'orange est la couleur d'un parti."},
+ {t:"Le calendrier et les rôles",m:10,d:"Saison zéro de février à juin 2027, clôture au Sénat fin juin, saison 1 en septembre. Un coprésident pour les institutions, l'autre pour les opérations. Dossier, pages 24 et 25.",q:"Février est-il tenable avec vos études ? Qui prend quoi ?",o:["Saison zéro en février 2027","Saison zéro en mars 2027","Directement la saison 1 en septembre"],r:"Février, avec une saison zéro volontairement petite."}
+];
+document.getElementById('odj').innerHTML='<tr><th></th><th>Point</th><th class="r">Durée</th></tr>'+P.map((p,i)=>`<tr><td class="k serif" style="color:var(--goldd);font-size:12pt">${i+1}</td><td>${p.t}</td><td class="r">${p.m} min</td></tr>`).join('')+`<tr class="tot"><td></td><td>Total</td><td class="r">${P.reduce((a,p)=>a+p.m,0)} min</td></tr>`;
+document.getElementById('rel').innerHTML='<tr><th></th><th>Point</th><th>Décision</th><th>Qui</th><th>Pour quand</th></tr>'+P.map((p,i)=>`<tr><td class="k">${i+1}</td><td class="k" style="width:48mm;white-space:normal">${p.t}</td><td style="width:62mm;height:10.5mm"></td><td></td><td></td></tr>`).join('');
+let h='';
+for(let i=0;i<P.length;i+=2){h+='<section class="page">'+[P[i],P[i+1]].map((p,j)=>`<div class="pt"><div class="hd"><span class="n">${i+j+1}</span><h3>${p.t}</h3><span class="tm">${p.m} minutes</span></div>
+<div class="gr"><div><h4>Ce que propose le dossier</h4><p class="sm">${p.d}</p><h4>La question</h4><p class="sm"><b>${p.q}</b></p><div class="reco"><b>Recommandation.</b> ${p.r}</div></div>
+<div><h4>Les options</h4>${p.o.map(o=>`<div class="opt"><i></i>${o}</div>`).join('')}<div class="opt"><i></i>Autre : <span style="display:inline-block;border-bottom:.3mm solid var(--ink);width:38mm"></span></div></div></div>
+<h4 style="margin-top:3mm">Ce qui ne va pas, ce qu'on change</h4><div class="lines"></div>
+<div class="dec"><div>Décision</div><div>Qui</div><div>Pour quand</div></div></div>`).join('')+'@@F@@</section>';}
+document.getElementById('pts').outerHTML=h.replace(/@@F@@/g,document.querySelector('.foot').outerHTML);
+</script>
